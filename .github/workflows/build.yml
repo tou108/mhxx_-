@@ -37,15 +37,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # ⑤ Gradle Wrapper が無い場合は生成
-      - name: Generate Gradle Wrapper if missing
+      # ⑤ Gradle Wrapper JAR を確実に生成（存在しない or 10KB未満なら再生成）
+      - name: Generate Gradle Wrapper JAR
         run: |
-          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "gradle-wrapper.jar が見つかりません。Gradleをインストールして生成します..."
+          JAR_PATH="gradle/wrapper/gradle-wrapper.jar"
+          JAR_SIZE=$(stat -c%s "$JAR_PATH" 2>/dev/null || echo 0)
+          if [ ! -f "$JAR_PATH" ] || [ "$JAR_SIZE" -lt 10000 ]; then
+            echo "gradle-wrapper.jar が見つからないか不正です（サイズ: ${JAR_SIZE} bytes）。再生成します..."
             curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o /tmp/gradle.zip
             unzip -q /tmp/gradle.zip -d /tmp/
             /tmp/gradle-8.4/bin/gradle wrapper --gradle-version 8.4
-            echo "gradle-wrapper.jar を生成しました"
+            echo "gradle-wrapper.jar を生成しました（$(stat -c%s "$JAR_PATH") bytes）"
+          else
+            echo "gradle-wrapper.jar は正常です（${JAR_SIZE} bytes）"
           fi
 
       # ⑥ Debug APK をビルド
