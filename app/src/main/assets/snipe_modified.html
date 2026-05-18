@@ -5,47 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MHXX 護石スナイプ統合ツール 拡張版</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
 <style>
 :root {
-  --bg: #0b0c10;
-  --panel: #12141a;
-  --panel2: #181a22;
-  --border: #252830;
-  --border2: #2e3240;
-  --gold: #c8922b;
-  --gold2: #e8b84a;
-  --gold-dim: #8a6320;
-  --text: #d4cbbf;
-  --text2: #9a9080;
-  --text3: #6a6058;
-  --accent: #4a7faa;
-  --accent2: #6090bb;
+  --bg: #0e0f11;
+  --panel: #16181d;
+  --panel2: #1d1f26;
+  --border: #2c2e38;
+  --border2: #383b4a;
+  --gold: #9daabf;
+  --gold2: #cdd6e8;
+  --gold-dim: #4a5268;
+  --text: #c8cdd8;
+  --text2: #808898;
+  --text3: #505563;
+  --accent: #5a7a9a;
+  --accent2: #7a9ab8;
   --green: #28a745;
   --red: #dc3545;
   --yellow: #e0a800;
   --teal: #20c997;
   --purple: #9b59b6;
   --purple2: #b07fd8;
+  --steel: #9daabf;
+  --steel2: #cdd6e8;
+  --steel-dim: #4a5268;
+  --steel-bright: #e2e8f4;
+  --chrome: #b8c4d8;
   --header-h: 52px;
   --font: 'Noto Sans JP', sans-serif;
   --font-en: 'Rajdhani', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; font-size: 13px; }
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(80,90,110,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(60,70,90,0.06) 0%, transparent 50%);
+  color: var(--text); font-family: var(--font); min-height: 100vh; font-size: 13px;
+}
 
 /* HEADER */
 .app-header {
-  background: linear-gradient(90deg, #0d0e13, #181a24, #0d0e13);
-  border-bottom: 1px solid var(--gold-dim);
+  background: linear-gradient(90deg, #0d0e12, #1a1c24, #141618, #1a1c24, #0d0e12);
+  border-bottom: 1px solid #3a3f52;
   height: var(--header-h);
   display: flex; align-items: center; padding: 0 20px; gap: 10px;
-  box-shadow: 0 2px 12px rgba(200,146,43,0.15);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(180,190,210,0.08);
   flex-wrap: wrap;
+  position: relative;
+}
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180,195,220,0.35), rgba(220,230,245,0.5), rgba(180,195,220,0.35), transparent);
 }
 .app-header h1 {
-  font-family: var(--font-en); font-size: 1.4rem; letter-spacing: 2px;
-  background: linear-gradient(135deg, var(--gold), var(--gold2), var(--gold));
+  font-family: var(--font-en); font-size: 1.4rem; letter-spacing: 3px;
+  background: linear-gradient(135deg, #6a7890, #b0bcd0, #e2e8f4, #c0cce0, #8898b0, #d0daea, #f0f4fc);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 1px 3px rgba(180,200,230,0.25));
 }
 .app-header .sub { color: var(--text2); font-size: 11px; letter-spacing: 1px; }
 .version-badge { background: var(--teal); color: #000; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 1px; }
@@ -59,7 +81,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
   color: var(--text2); transition: all 0.15s; font-weight: 500; white-space: nowrap;
 }
 .main-tab:hover { background: var(--panel2); color: var(--text); }
-.main-tab.active { background: var(--panel2); color: var(--gold); border-bottom: 2px solid var(--gold); }
+.main-tab.active { background: var(--panel2); color: var(--steel2); border-bottom: 2px solid var(--steel); }
 
 /* TAB PAGES */
 .tab-page { display: none; }
@@ -73,14 +95,15 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 
 /* SECTION HEADERS */
 .sec-title {
-  background: linear-gradient(90deg, var(--panel2), var(--panel));
+  background: linear-gradient(90deg, #1d2030, #181a22);
   border-bottom: 1px solid var(--border);
   padding: 10px 14px;
   font-weight: 700; font-size: 11px; letter-spacing: 2px;
-  color: var(--gold); text-transform: uppercase;
+  color: var(--steel2); text-transform: uppercase;
   display: flex; align-items: center; gap: 8px;
+  box-shadow: inset 0 1px 0 rgba(180,195,220,0.06);
 }
-.sec-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+.sec-title .dot { width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(135deg, var(--steel), var(--steel2)); box-shadow: 0 0 4px rgba(180,200,230,0.4); }
 .sec-title.teal { color: var(--teal); }
 .sec-title.teal .dot { background: var(--teal); }
 .sec-title.purple { color: var(--purple2); }
@@ -95,7 +118,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 }
 .kind-tab:last-child { border-right: none; }
 .kind-tab:hover { background: var(--panel2); color: var(--text); }
-.kind-tab.active { background: var(--panel2); color: var(--gold); border-bottom: 2px solid var(--gold); }
+.kind-tab.active { background: var(--panel2); color: var(--steel2); border-bottom: 2px solid var(--steel); }
 .kind-tab[data-k="0"].active { color: #80c0c0; border-color: #80c0c0; }
 .kind-tab[data-k="1"].active { color: #c04040; border-color: #c04040; }
 .kind-tab[data-k="2"].active { color: #c0c040; border-color: #c0c040; }
@@ -111,7 +134,7 @@ select, input[type="number"], input[type="text"], textarea {
   border-radius: 4px; padding: 6px 8px; font-size: 12px; font-family: var(--font);
   transition: border-color 0.15s;
 }
-select:focus, input:focus, textarea:focus { outline: none; border-color: var(--gold-dim); }
+select:focus, input:focus, textarea:focus { outline: none; border-color: var(--steel); }
 select { width: 100%; cursor: pointer; }
 input[type="number"] { width: 80px; }
 .input-wide { width: 130px !important; }
@@ -125,16 +148,25 @@ input[type="number"] { width: 80px; }
 }
 .origin-btn:first-child { border-radius: 4px 0 0 4px; }
 .origin-btn:last-child { border-radius: 0 4px 4px 0; border-left: none; }
-.origin-btn.active { background: var(--gold-dim); color: var(--gold2); border-color: var(--gold-dim); }
+.origin-btn.active { background: var(--steel-dim); color: var(--steel2); border-color: var(--steel); box-shadow: inset 0 1px 0 rgba(180,200,230,0.1); }
 .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 .search-btn {
-  width: 100%; padding: 10px; background: linear-gradient(135deg, #8a6320, var(--gold));
-  border: none; border-radius: 4px; color: #0d0a05; font-size: 13px; font-weight: 700;
-  cursor: pointer; letter-spacing: 1px; transition: all 0.15s; font-family: var(--font);
+  width: 100%; padding: 10px;
+  background: linear-gradient(135deg, #2c3040, #3e4558, #5a6278, #3e4558, #2c3040);
+  border: 1px solid #5a6278;
+  border-radius: 4px; color: #d8e0f0; font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: 2px; transition: all 0.15s; font-family: var(--font);
+  box-shadow: inset 0 1px 0 rgba(200,215,240,0.15), 0 2px 8px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
-.search-btn:hover { background: linear-gradient(135deg, var(--gold), var(--gold2)); }
+.search-btn:hover {
+  background: linear-gradient(135deg, #3a4055, #52607a, #78899a, #52607a, #3a4055);
+  border-color: #8898b0;
+  color: #f0f4fc;
+  box-shadow: inset 0 1px 0 rgba(220,235,255,0.25), 0 2px 12px rgba(0,0,0,0.5);
+}
 .search-btn:active { transform: scale(0.98); }
-.search-btn:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; }
+.search-btn:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; box-shadow: none; border-color: var(--border); }
 .search-btn.teal-btn { background: linear-gradient(135deg, #1a7a5a, var(--teal)); color: #000; }
 .search-btn.teal-btn:hover { background: linear-gradient(135deg, var(--teal), #40ffb8); }
 .search-btn.purple-btn { background: linear-gradient(135deg, #5a2a8a, var(--purple2)); color: #fff; }
@@ -152,7 +184,7 @@ input[type="number"] { width: 80px; }
 /* PROGRESS BAR */
 .search-progress-wrap { padding: 6px 0; display: none; }
 .search-progress-bar { height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
-.search-progress-inner { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); transition: width 0.3s; border-radius: 2px; }
+.search-progress-inner { height: 100%; background: linear-gradient(90deg, #4a5570, var(--steel), var(--steel2)); transition: width 0.3s; border-radius: 2px; }
 .search-progress-label { font-size: 10px; color: var(--text3); margin-top: 4px; text-align: center; }
 
 /* RESULTS */
@@ -160,7 +192,7 @@ input[type="number"] { width: 80px; }
   padding: 8px 14px; border-bottom: 1px solid var(--border); background: var(--panel);
   display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text2);
 }
-.result-count { color: var(--gold); font-weight: 700; font-size: 13px; }
+.result-count { color: var(--steel2); font-weight: 700; font-size: 13px; }
 .results-table-wrap { flex: 1; overflow-y: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th {
@@ -177,15 +209,15 @@ tr.clickable:hover td { background: #1e2538; }
 .frame-cell { font-family: monospace; color: var(--accent2); font-size: 11px; }
 .time-cell { font-size: 10px; color: var(--text2); font-family: monospace; }
 .skill-cell { font-weight: 500; }
-.pts-cell { text-align: right; color: var(--gold2); font-weight: 700; font-size: 12px; }
+.pts-cell { text-align: right; color: var(--steel2); font-weight: 700; font-size: 12px; }
 .no-skill { color: var(--text3); font-size: 11px; }
 .slot-cell { text-align: center; font-family: monospace; font-weight: 700; }
 .slot-0 { color: var(--text3); } .slot-1 { color: #80a0c0; }
-.slot-2 { color: #60c0a0; } .slot-3 { color: var(--gold2); }
+.slot-2 { color: #60c0a0; } .slot-3 { color: var(--steel2); }
 .rare-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 700; font-family: var(--font-en); letter-spacing: 1px; }
 .no-results { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
 .searching { text-align: center; padding: 40px; color: var(--text2); font-size: 13px; }
-.progress-bar { height: 2px; background: var(--gold); animation: progress 1s infinite; width: 60%; margin: 10px auto; }
+.progress-bar { height: 2px; background: linear-gradient(90deg, var(--steel-dim), var(--steel), var(--steel2)); animation: progress 1s infinite; width: 60%; margin: 10px auto; }
 @keyframes progress { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
 .set-timer-hint { font-size: 10px; color: var(--text3); margin-top: 4px; text-align: center; }
 .frame-tag {
@@ -198,12 +230,13 @@ tr.clickable:hover td { background: #1e2538; }
 /* TIMER PANEL */
 .timer-panel { padding: 0; }
 .timer-section { padding: 14px; border-bottom: 1px solid var(--border); }
-.timer-section-title { font-size: 11px; color: var(--gold); letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+.timer-section-title { font-size: 11px; color: var(--steel2); letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
 .timer-section-title.teal-title { color: var(--teal); }
 .timer-display {
   font-size: 2.8rem; font-weight: 700; text-align: center;
-  font-family: var(--font-en); color: var(--gold2); margin: 8px 0;
+  font-family: var(--font-en); color: var(--steel2); margin: 8px 0;
   letter-spacing: 2px; line-height: 1;
+  text-shadow: 0 0 20px rgba(180,200,230,0.3), 0 1px 3px rgba(0,0,0,0.6);
 }
 .timer-display.running { color: #80ff80; animation: pulse 1s infinite; }
 .timer-display.urgent { color: #ff6060; animation: pulse 0.5s infinite; }
@@ -227,7 +260,7 @@ tr.clickable:hover td { background: #1e2538; }
 .setting-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 12px; }
 .setting-label { color: var(--text2); width: 90px; flex-shrink: 0; font-size: 11px; }
 .setting-row input[type="number"] { width: 52px; padding: 4px 6px; font-size: 12px; }
-.setting-row input[type="checkbox"] { cursor: pointer; accent-color: var(--gold); }
+.setting-row input[type="checkbox"] { cursor: pointer; accent-color: var(--steel); }
 .unit-label { color: var(--text2); font-size: 11px; }
 .count-display { font-size: 3rem; font-weight: 700; text-align: center; color: var(--accent2); margin: 6px 0; font-family: var(--font-en); }
 .sw-display { font-size: 2rem; font-weight: 700; text-align: center; color: var(--text2); margin: 6px 0; font-family: monospace; }
@@ -236,7 +269,7 @@ tr.clickable:hover td { background: #1e2538; }
 .lap-list li:last-child { border-bottom: none; }
 .bpm-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; }
 .timer-section.flash { animation: flashAnim 0.5s ease; }
-@keyframes flashAnim { 0%{background:rgba(200,146,43,0.2)} 100%{background:transparent} }
+@keyframes flashAnim { 0%{background:rgba(140,160,200,0.2)} 100%{background:transparent} }
 
 /* AUTO SNIPE LOOP */
 .loop-method-btn {
@@ -266,13 +299,13 @@ tr.clickable:hover td { background: #1e2538; }
   background: rgba(32,201,151,0.08); border: 1px solid rgba(32,201,151,0.3);
   border-radius: 4px; padding: 10px 12px; margin-top: 10px;
 }
-.combo-frame-val { font-size: 1.6rem; font-weight: 700; color: var(--teal); font-family: var(--font-en); }
+.combo-frame-val { font-size: 1.6rem; font-weight: 700; color: var(--steel2); font-family: var(--font-en); }
 .combo-match-bar { font-size: 10px; color: var(--text3); margin-top: 3px; }
 .watch-result-card {
-  background: rgba(200,146,43,0.08); border: 1px solid var(--gold-dim);
+  background: rgba(90,102,120,0.1); border: 1px solid var(--steel-dim);
   border-radius: 4px; padding: 10px 12px; margin-top: 8px;
 }
-.watch-time-val { font-size: 1.6rem; font-weight: 700; color: var(--gold2); font-family: var(--font-en); letter-spacing: 1px; }
+.watch-time-val { font-size: 1.6rem; font-weight: 700; color: var(--steel2); font-family: var(--font-en); letter-spacing: 1px; }
 .auto-badge { font-size: 9px; background: var(--teal); color: #000; padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-weight: 700; }
 .use-frame-btn {
   background: rgba(32,201,151,0.15); border: 1px solid var(--teal); color: var(--teal);
@@ -300,7 +333,7 @@ tr.clickable:hover td { background: #1e2538; }
   border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s;
 }
 .search-mode-tab:hover { color: var(--text); background: var(--panel2); }
-.search-mode-tab.active { color: var(--gold); border-bottom-color: var(--gold); background: var(--panel2); }
+.search-mode-tab.active { color: var(--steel2); border-bottom-color: var(--steel); background: var(--panel2); }
 
 /* ---- フレーム検索 調整ボタン ---- */
 .frame-adj-btns { display: flex; gap: 4px; margin-top: 4px; }
@@ -321,7 +354,7 @@ tr.clickable:hover td { background: #1e2538; }
 .frc-row   { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 13px; }
 .frc-lbl   { color: var(--text2); width: 70px; flex-shrink: 0; font-size: 11px; }
 .frc-val   { font-weight: 600; color: var(--text); }
-.frc-pts   { color: var(--gold); font-size: 11px; margin-left: 2px; }
+.frc-pts   { color: var(--steel2); font-size: 11px; margin-left: 2px; }
 .frc-divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 .frc-btns  { display: flex; gap: 8px; margin-top: 14px; }
 .frc-btn   {
@@ -372,10 +405,10 @@ tr.clickable:hover td { background: #1e2538; }
 .continue-result-item .val { font-size: 1.5rem; font-weight: 700; font-family: var(--font-en); }
 .continue-result-item.green .val { color: var(--teal); }
 .continue-result-item.blue .val { color: var(--accent2); }
-.continue-result-item.yellow .val { color: var(--gold2); }
+.continue-result-item.yellow .val { color: var(--steel2); }
 .continue-timer-note {
   margin-top: 10px; padding: 8px 10px; background: rgba(200,146,43,0.1); border: 1px solid var(--gold-dim);
-  border-radius: 4px; font-size: 11px; color: var(--gold2);
+  border-radius: 4px; font-size: 11px; color: var(--steel2);
 }
 .info-box {
   background: rgba(74,127,170,0.08); border: 1px solid rgba(74,127,170,0.3);
@@ -546,19 +579,19 @@ body.light-mode .app-header {
 .ctrl-left { width: 460px; min-width: 340px; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; }
 .ctrl-right { flex: 1; overflow-y: auto; min-width: 0; }
 .ctrl-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-.ctrl-section-title { font-size: 11px; color: var(--gold); letter-spacing: 1px; margin-bottom: 10px; font-weight: 600; }
+.ctrl-section-title { font-size: 11px; color: var(--steel2); letter-spacing: 1px; margin-bottom: 10px; font-weight: 600; }
 .stick-dir-btns { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; margin: 0 auto; width: fit-content; }
 .stick-dir-btn { width: 40px; height: 40px; background: var(--panel2); border: 1px solid var(--border2); color: var(--text2); border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; font-family: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .stick-dir-btn:hover, .stick-dir-btn:active { background: var(--accent); color: white; border-color: var(--accent2); }
 .stick-dir-btn.active { background: var(--accent); color: white; border-color: var(--accent2); }
 .ctrl-btn { padding: 9px 4px; border: 1px solid var(--border2); color: var(--text2); background: var(--panel2); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-align: center; transition: all 0.1s; font-family: var(--font); width: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .ctrl-btn:hover, .ctrl-btn:active { background: var(--accent); color: white; border-color: var(--accent2); }
-.ctrl-btn.pressed { background: var(--gold-dim); color: var(--gold2); border-color: var(--gold); transform: scale(0.95); }
+.ctrl-btn.pressed { background: var(--gold-dim); color: var(--steel2); border-color: var(--steel2); transform: scale(0.95); }
 .ctrl-btn-grid { display: grid; gap: 6px; }
 .multi-btn-grid { display: flex; flex-wrap: wrap; gap: 5px; }
 .multi-chk { display: flex; align-items: center; gap: 4px; background: var(--panel2); border: 1px solid var(--border2); border-radius: 4px; padding: 6px 9px; cursor: pointer; font-size: 12px; user-select: none; touch-action: manipulation; }
-.multi-chk input { cursor: pointer; accent-color: var(--gold); width: 14px; height: 14px; }
-.multi-chk.checked { border-color: var(--gold-dim); background: rgba(200,146,43,0.15); color: var(--gold2); }
+.multi-chk input { cursor: pointer; accent-color: var(--steel2); width: 14px; height: 14px; }
+.multi-chk.checked { border-color: var(--gold-dim); background: rgba(200,146,43,0.15); color: var(--steel2); }
 .macro-list { max-height: 340px; overflow-y: auto; border: 1px solid var(--border); border-radius: 4px; }
 .macro-item { display: flex; align-items: flex-start; gap: 6px; padding: 10px 10px; border-bottom: 1px solid var(--border); font-size: 11px; cursor: pointer; transition: background 0.1s; }
 .macro-item:hover, .macro-item:active { background: var(--panel2); }
@@ -597,6 +630,26 @@ body.light-mode .app-header {
   .ctrl-left { width: 100%; min-width: 0; border: none; border-bottom: 1px solid var(--border); }
   .ctrl-right { width: 100%; }
 }
+
+/* ── CHAT AI ── */
+.chat-wrap { display:flex; flex-direction:column; height:100%; }
+.chat-messages { flex:1; overflow-y:auto; padding:10px 12px; display:flex; flex-direction:column; gap:8px; min-height:180px; max-height:340px; }
+.chat-msg { max-width:88%; padding:8px 12px; border-radius:12px; font-size:12px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.chat-msg.user { background:rgba(74,127,170,0.25); border:1px solid rgba(74,127,170,0.4); align-self:flex-end; border-bottom-right-radius:3px; color:var(--text); }
+.chat-msg.ai { background:rgba(90,100,130,0.15); border:1px solid rgba(140,160,200,0.25); align-self:flex-start; border-bottom-left-radius:3px; color:var(--steel2); }
+.chat-msg.system { background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.2); align-self:center; color:var(--teal); font-size:10px; border-radius:6px; text-align:center; }
+.chat-input-row { display:flex; gap:6px; padding:8px 12px; border-top:1px solid var(--border); flex-shrink:0; }
+.chat-input { flex:1; background:var(--panel2); border:1px solid var(--border2); color:var(--text); border-radius:6px; padding:7px 10px; font-size:12px; font-family:var(--font); resize:none; height:36px; }
+.chat-input:focus { outline:none; border-color:var(--steel); }
+.chat-send-btn { padding:7px 14px; background:linear-gradient(135deg,#2c3040,#3e4a60,#5a6a80); border:1px solid #5a6a80; border-radius:6px; color:#d8e4f4; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow: inset 0 1px 0 rgba(200,215,240,0.12); }
+.chat-send-btn:hover { background: linear-gradient(135deg,#3a4055,#506080,#708aa0); border-color:#8898b8; }
+.voice-btn { padding:7px 10px; background:var(--panel2); border:1px solid var(--border2); color:var(--text2); border-radius:6px; cursor:pointer; font-size:14px; transition:all 0.15s; }
+.voice-btn.recording { background:rgba(220,53,69,0.2); border-color:var(--red); color:var(--red); animation:pulse 0.8s infinite; }
+.ocr-progress { padding:8px 12px; font-size:11px; color:var(--teal); display:flex; align-items:center; gap:6px; }
+.ocr-progress-bar { flex:1; height:4px; background:var(--border2); border-radius:2px; overflow:hidden; }
+.ocr-progress-fill { height:100%; background:linear-gradient(90deg,var(--teal),#40ffb8); border-radius:2px; transition:width 0.3s; }
+.region-debug { font-size:9px; color:var(--text3); font-family:monospace; margin-top:4px; padding:4px 8px; background:var(--panel); border-radius:3px; }
+.region-debug span { display:inline-block; margin-right:8px; }
 </style>
 </head>
 <body>
@@ -850,16 +903,16 @@ body.light-mode .app-header {
     </div><!-- /questRewardForm -->
 
     <!-- ======== AI護石OCR認識フォーム ======== -->
-    <!-- OCRエンジン: Google ML Kit Japanese OCR / RNGアルゴリズム: apmnnn/mhxx-rng (MIT) -->
+    <!-- OCRエンジン: Tesseract.js (日本語オフライン対応) / 座標ベースクロップ精密認識 -->
     <div id="aiRecogForm" style="display:none;">
       <div class="search-form">
         <div class="ai-guide">
           <strong>🤖 AI護石フレーム自動検索</strong><br>
-          マカ錬金の鑑定結果画面を撮影してアップロードするだけで、OCRが護石を認識しフレームを自動検索します。<br>
-          <em style="color:var(--text3);font-size:10px;">使用技術: Google ML Kit Text Recognition (Japanese) ／ RNG解析: apmnnn/mhxx-rng (MIT)</em>
+          Switchの護石ポップアップ画面をそのままアップロード。座標ベースOCRで高精度認識します。<br>
+          <em style="color:var(--text3);font-size:10px;">OCR: Tesseract.js (日本語・オフライン対応) ／ 座標: x452〜862, y48〜278</em>
           <div class="reward-step" style="margin-top:6px;"><div class="reward-step-num">1</div><span>Switch画面（スキル名・数値・スロットが見える状態）を撮影。</span></div>
           <div class="reward-step"><div class="reward-step-num">2</div><span>下の枠に画像をドロップ、またはタップして選択。</span></div>
-          <div class="reward-step"><div class="reward-step-num">3</div><span>OCRが解析し一致フレームを自動表示します。</span></div>
+          <div class="reward-step"><div class="reward-step-num">3</div><span>AI が自動解析してフレームを表示します。</span></div>
         </div>
 
         <div class="form-row">
@@ -896,13 +949,23 @@ body.light-mode .app-header {
           <input type="file" id="aiFileInput" accept="image/*" style="display:none;" onchange="handleAiFile(event)">
         </div>
 
+        <!-- OCR Progress -->
+        <div id="ocrProgressWrap" style="display:none;" class="ocr-progress">
+          <span id="ocrProgressLabel">初期化中...</span>
+          <div class="ocr-progress-bar"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
+          <span id="ocrProgressPct">0%</span>
+        </div>
+
         <div id="aiStatusArea"></div>
         <div id="aiResultCard" style="display:none;" class="ai-result-card">
           <div style="font-size:11px;color:var(--teal);font-weight:700;margin-bottom:8px;">🔍 OCR認識結果</div>
           <div id="aiResultBody"></div>
+          <!-- 領域別認識テキスト（デバッグ） -->
+          <div id="regionDebugArea" style="display:none;" class="region-debug"></div>
           <div style="display:flex;gap:6px;margin-top:10px;">
             <button class="search-btn teal-btn" onclick="aiRunSearch()" style="flex:1;font-size:12px;padding:8px;">🔍 このデータで検索</button>
-            <button onclick="aiClear()" style="padding:8px 12px;background:var(--panel2);border:1px solid var(--border2);color:var(--text2);border-radius:4px;cursor:pointer;font-size:11px;">✕ クリア</button>
+            <button onclick="toggleRegionDebug()" style="padding:8px 10px;background:var(--panel2);border:1px solid var(--border2);color:var(--text2);border-radius:4px;cursor:pointer;font-size:10px;">🔬</button>
+            <button onclick="aiClear()" style="padding:8px 12px;background:var(--panel2);border:1px solid var(--border2);color:var(--text2);border-radius:4px;cursor:pointer;font-size:11px;">✕</button>
           </div>
           <details style="margin-top:8px;">
             <summary style="font-size:10px;color:var(--text3);cursor:pointer;">OCR生テキスト（デバッグ）</summary>
@@ -920,6 +983,23 @@ body.light-mode .app-header {
             <span class="pts-label">F</span>
           </div>
         </div>
+
+        <!-- ── AIチャット＆音声検索 ── -->
+        <div style="margin-top:12px;border:1px solid var(--border2);border-radius:6px;overflow:hidden;">
+          <div class="sec-title" style="margin:0;padding:8px 12px;font-size:10px;">
+            <span class="dot" style="background:var(--purple2);"></span>
+            <span style="color:var(--purple2);">💬 AIチャット検索 / 音声対応</span>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg system">護石のスキルを言葉で検索できます。例：「連撃+4のお守りを探して」「3スロット＋痛撃+5」「千里眼+3のフレームは？」</div>
+          </div>
+          <div class="chat-input-row">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="音声入力">🎤</button>
+            <input class="chat-input" id="chatInput" placeholder="スキル名や条件を入力..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="chat-send-btn" onclick="sendChat()">送信</button>
+          </div>
+        </div>
+
       </div>
     </div><!-- /aiRecogForm -->
 
@@ -944,8 +1024,8 @@ body.light-mode .app-header {
     <div class="sec-title"><span class="dot"></span>タイマー</div>
 
     <!-- ★ AUTO CALC PANEL -->
-    <div class="timer-section" id="autoCalcSection" style="background:rgba(200,146,43,0.05);border-left:3px solid var(--gold);">
-      <div class="timer-section-title" style="color:var(--gold2);">⚡ 自動計算セット</div>
+    <div class="timer-section" id="autoCalcSection" style="background:rgba(90,100,130,0.08);border-left:3px solid var(--steel);">
+      <div class="timer-section-title" style="color:var(--steel2);">⚡ 自動計算セット</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">
         検索結果をクリックすると自動入力されます。<br>
         または以下にフレームを手動入力してください。
@@ -1893,13 +1973,13 @@ function onAcFrameInput() {
   preview.style.display = 'block';
   preview.style.cssText = 'display:block;background:rgba(200,146,43,0.07);border:1px solid var(--gold-dim);border-radius:5px;padding:10px 12px;margin-bottom:10px;font-size:11px;line-height:2;';
   preview.innerHTML = `
-    <div style="color:var(--gold2);font-weight:700;margin-bottom:3px;">F${frame.toLocaleString()} の計算結果</div>
-    <div style="color:var(--text3);">最終時間: <span style="color:var(--gold);">${fMin}分${fSec}秒</span>　(${C.finalFrame.toLocaleString()}F)</div>
+    <div style="color:var(--steel2);font-weight:700;margin-bottom:3px;">F${frame.toLocaleString()} の計算結果</div>
+    <div style="color:var(--text3);">最終時間: <span style="color:var(--steel2);">${fMin}分${fSec}秒</span>　(${C.finalFrame.toLocaleString()}F)</div>
     <hr style="border:none;border-top:1px solid var(--border);margin:5px 0;">
     <div style="color:#8899cc;font-weight:600;font-size:10px;letter-spacing:1px;">📺 タイトル画面待機法</div>
     <div>待機(タイトル画面): <span style="color:var(--teal);">${secToMinSec(T.waitSec)}</span>
          &nbsp;<span style="font-size:10px;color:var(--text3);">→ この時間後にcontinueを押す</span></div>
-    <div style="font-size:10px;color:var(--gold2);">誤差: ±${T.varianceF}F（≈ ±1秒）　continue押下で700F消費</div>
+    <div style="font-size:10px;color:var(--steel2);">誤差: ±${T.varianceF}F（≈ ±1秒）　continue押下で700F消費</div>
     <hr style="border:none;border-top:1px solid var(--border);margin:5px 0;">
     <div style="color:#d06020;font-weight:600;font-size:10px;letter-spacing:1px;">🎮 Continue連打法</div>
     <div>待機: <span style="color:var(--accent2);">${secToMinSec(C.waitSec)}</span>　
@@ -2022,7 +2102,7 @@ function showToast(msg) {
     t = document.createElement('div');
     t.id = 'toast';
     t.style.cssText = `position:fixed;bottom:20px;right:20px;background:#1e2030;border:1px solid var(--gold-dim);
-      color:var(--gold);padding:8px 16px;border-radius:6px;font-size:12px;z-index:9999;
+      color:var(--steel2);padding:8px 16px;border-radius:6px;font-size:12px;z-index:9999;
       opacity:0;transition:opacity 0.3s;pointer-events:none;max-width:300px;`;
     document.body.appendChild(t);
   }
@@ -2253,7 +2333,7 @@ function doWatchAndSet() {
       <div style="font-size:11px;color:var(--text2);">残り ${diff.toLocaleString()} フレーム</div>
       <div class="watch-time-val">${timeStr}</div>
       <div style="font-size:10px;color:var(--text3);">${ms.toLocaleString()} ms</div>
-      <button class="use-frame-btn" onclick="setTimerFromMs(${ms})" style="border-color:var(--gold-dim);color:var(--gold2);">⏱ タイマーにセット</button>
+      <button class="use-frame-btn" onclick="setTimerFromMs(${ms})" style="border-color:var(--gold-dim);color:var(--steel2);">⏱ タイマーにセット</button>
     </div>`;
   setTimerFromMs(ms);
   showToast(`⏱ タイマー自動セット: ${timeStr}`);
@@ -2718,7 +2798,7 @@ function doQuestRewardSearch() {
           <div style="margin:4px 0;line-height:1.8;">${patternHtml}</div>
           ${diff !== null && diff >= 0 ? `
           <div class="reward-diff-val">
-            目標 F${targetF.toLocaleString()} まで <strong style="color:var(--gold2);">${diff.toLocaleString()}F</strong>
+            目標 F${targetF.toLocaleString()} まで <strong style="color:var(--steel2);">${diff.toLocaleString()}F</strong>
             &nbsp;→ 待機 <strong style="color:var(--teal);">${timeSt}</strong>
           </div>` : (diff !== null && diff < 0 ? `<div style="font-size:11px;color:var(--red);">目標フレームはすでに過ぎています</div>` : '')}
           <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
@@ -3128,7 +3208,7 @@ function renderMacroPreview(steps, elId) {
   var el = document.getElementById(elId);
   if (!el) return;
   el.innerHTML = steps.map(function(s) {
-    if (s.type === 'press') return '<span class="macro-step-badge" style="color:var(--gold2);">' + s.button + '</span>';
+    if (s.type === 'press') return '<span class="macro-step-badge" style="color:var(--steel2);">' + s.button + '</span>';
     if (s.type === 'multipress') return '<span class="macro-step-badge" style="color:#ff8040;">[' + s.buttons.join('+') + ']</span>';
     if (s.type === 'stick') return '<span class="macro-step-badge" style="color:var(--teal);">' + s.side + '(' + s.x.toFixed(1) + ',' + s.y.toFixed(1) + ')</span>';
     if (s.type === 'wait') return '<span class="macro-step-badge" style="color:var(--text3);">⏱' + s.ms + 'ms</span>';
@@ -3163,7 +3243,7 @@ function renderMacroList() {
   }
   el.innerHTML = savedMacros.map(function(m, i) {
     var preview = m.steps.slice(0, 10).map(function(s) {
-      if (s.type === 'press') return '<span class="macro-step-badge" style="color:var(--gold2);">' + s.button + '</span>';
+      if (s.type === 'press') return '<span class="macro-step-badge" style="color:var(--steel2);">' + s.button + '</span>';
       if (s.type === 'multipress') return '<span class="macro-step-badge" style="color:#ff8040;">[' + s.buttons.join('+') + ']</span>';
       if (s.type === 'stick') return '<span class="macro-step-badge" style="color:var(--teal);">' + s.side + '🕹</span>';
       if (s.type === 'wait') return '<span class="macro-step-badge" style="color:var(--text3);">⏱</span>';
@@ -3498,25 +3578,325 @@ function findSkillIdxByOcr(rawName) {
 // OCR エンジン: Google ML Kit Japanese OCR (APK専用・オフライン高精度)
 // =====================================================================
 
+// =====================================================================
+// OCR エンジン: Tesseract.js (ブラウザ内オフライン日本語OCR) + 座標ベースクロップ
+// Switch 1280×720 画面の護石ポップアップ座標を使用して精密認識
+// =====================================================================
+
+// 護石ポップアップ座標定義 (Switch 1280×720 基準)
+const CHARM_REGIONS = {
+  popup:      { x: 452, y: 48,  w: 410, h: 230 }, // ポップアップ全体
+  charmName:  { x: 456, y: 62,  w: 406, h: 33  }, // 護石名
+  skill1Name: { x: 568, y: 122, w: 212, h: 21  }, // 固有スキル1 スキル名
+  skill1Pts:  { x: 785, y: 122, w: 70,  h: 21  }, // 固有スキル1 +数値
+  skill2Name: { x: 568, y: 152, w: 212, h: 21  }, // 固有スキル2 スキル名
+  skill2Pts:  { x: 785, y: 152, w: 70,  h: 21  }, // 固有スキル2 +数値
+  slots:      { x: 568, y: 182, w: 92,  h: 21  }, // スロット
+};
+
+let tesseractWorker = null;
+let tesseractReady = false;
+let tesseractLoading = false;
+
+async function initTesseract() {
+  if (tesseractReady) return tesseractWorker;
+  if (tesseractLoading) {
+    await new Promise(r => { const iv = setInterval(()=>{ if(tesseractReady||!tesseractLoading){clearInterval(iv);r();} }, 200); });
+    return tesseractWorker;
+  }
+  tesseractLoading = true;
+  const pw = document.getElementById('ocrProgressWrap');
+  if (pw) pw.style.display = 'flex';
+  setOcrProgress('Tesseract.js 日本語モデル読み込み中...', 5);
+  try {
+    tesseractWorker = await Tesseract.createWorker('jpn', 1, {
+      logger: m => {
+        if (m.status === 'loading tesseract core') setOcrProgress('コア読み込み中...', 10);
+        else if (m.status === 'loading language traineddata') setOcrProgress('日本語データ読み込み中...', 30);
+        else if (m.status === 'initializing tesseract') setOcrProgress('初期化中...', 60);
+        else if (m.status === 'initialized tesseract') setOcrProgress('完了', 100);
+        else if (m.status === 'recognizing text') setOcrProgress('OCR認識中...', 70 + Math.round((m.progress||0)*25));
+      }
+    });
+    tesseractReady = true;
+    tesseractLoading = false;
+    if (pw) pw.style.display = 'none';
+    return tesseractWorker;
+  } catch(e) {
+    tesseractLoading = false;
+    throw e;
+  }
+}
+
+function setOcrProgress(label, pct) {
+  const el = document.getElementById('ocrProgressLabel');
+  const fill = document.getElementById('ocrProgressFill');
+  const pctEl = document.getElementById('ocrProgressPct');
+  if (el) el.textContent = label;
+  if (fill) fill.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+async function loadImageFromDataUrl(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+// 画像を指定座標でクロップ、前処理してcanvasを返す
+function cropRegion(srcImg, region, scaleX, scaleY, upscale = 4) {
+  const sx = Math.round(region.x * scaleX);
+  const sy = Math.round(region.y * scaleY);
+  const sw = Math.round(region.w * scaleX);
+  const sh = Math.round(region.h * scaleY);
+
+  const canvas = document.createElement('canvas');
+  const outW = Math.max(sw * upscale, 80);
+  const outH = Math.max(sh * upscale, 24);
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext('2d');
+
+  // 白背景
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, outW, outH);
+  // 拡大描画
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, outW, outH);
+
+  // コントラスト強調（ゲーム画面の白文字を黒地に反転→OCR向け）
+  const imageData = ctx.getImageData(0, 0, outW, outH);
+  const data = imageData.data;
+  // まず明度を計算して反転するかどうか判断
+  let brightSum = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    brightSum += 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+  }
+  const avgBright = brightSum / (data.length / 4);
+  const invert = avgBright < 128; // 暗い背景なら反転
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i], g = data[i+1], b = data[i+2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    // コントラスト強調
+    const enhanced = Math.min(255, Math.max(0, (gray - 128) * 2.2 + 128));
+    // 二値化
+    let val = enhanced > 140 ? 255 : 0;
+    if (invert) val = 255 - val;
+    data[i] = data[i+1] = data[i+2] = val;
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas;
+}
+
+// PSM値: 7=SINGLE_LINE, 6=SINGLE_BLOCK, 3=AUTO
+const PSM_SINGLE_LINE = 7;
+const PSM_SINGLE_BLOCK = 6;
+
+// 単一領域のOCRを実行
+async function ocrRegion(worker, srcImg, region, scaleX, scaleY, psm = PSM_SINGLE_LINE) {
+  const canvas = cropRegion(srcImg, region, scaleX, scaleY);
+  await worker.setParameters({ tessedit_pageseg_mode: psm });
+  const { data: { text } } = await worker.recognize(canvas);
+  return text.trim();
+}
+
 async function runOcr(dataUrl) {
   const statusArea = document.getElementById('aiStatusArea');
 
-  // ── Android WebView + ML Kit ──────────────────────────────────────
+  // ── Android WebView + ML Kit がある場合はそちらを優先 ──────────────────────
   if (window.Android && typeof window.Android.runMlKit === 'function') {
     statusArea.innerHTML = `<div class="ai-analyzing"><span class="ai-spin">⚙</span> ML Kit OCR認識中...</div>`;
     try {
       const base64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
       window.Android.runMlKit(base64);
-      // 結果は receiveMlKitResult() コールバックで非同期に受け取る
     } catch (err) {
       statusArea.innerHTML = `<div class="ai-error">⚠ ML Kit呼び出しエラー: ${err.message || err}</div>`;
     }
     return;
   }
 
-  // ── 非APK環境では利用不可 ──────────────────────────────────────
-  statusArea.innerHTML = `<div class="ai-error">⚠ AI認識機能はAPK（Android版）専用です。<br>
-    <span style="font-size:10px;color:var(--text3);">Google ML Kit OCRはAPK環境でのみ動作します。</span></div>`;
+  // ── ブラウザ環境: Tesseract.js + 座標ベースクロップ ──────────────────────
+  statusArea.innerHTML = `<div class="ai-analyzing"><span class="ai-spin">⚙</span> 座標ベースOCR準備中...</div>`;
+  const pw = document.getElementById('ocrProgressWrap');
+  if (pw) pw.style.display = 'flex';
+
+  try {
+    const worker = await initTesseract();
+    if (pw) pw.style.display = 'flex';
+    setOcrProgress('画像を読み込み中...', 65);
+
+    const img = await loadImageFromDataUrl(dataUrl);
+    const origW = img.naturalWidth || img.width;
+    const origH = img.naturalHeight || img.height;
+
+    // Switch 1280×720 基準でスケール計算
+    const scaleX = origW / 1280;
+    const scaleY = origH / 720;
+
+    statusArea.innerHTML = `<div class="ai-analyzing"><span class="ai-spin">⚙</span> 護石ポップアップ領域を切り出し中... (${origW}×${origH})</div>`;
+
+    setOcrProgress('護石名 認識中...', 70);
+    const rawCharmName  = await ocrRegion(worker, img, CHARM_REGIONS.charmName,  scaleX, scaleY);
+    setOcrProgress('スキル1 認識中...', 78);
+    const rawSkill1Name = await ocrRegion(worker, img, CHARM_REGIONS.skill1Name, scaleX, scaleY);
+    setOcrProgress('スキル1ポイント 認識中...', 82);
+    const rawSkill1Pts  = await ocrRegion(worker, img, CHARM_REGIONS.skill1Pts,  scaleX, scaleY);
+    setOcrProgress('スキル2 認識中...', 86);
+    const rawSkill2Name = await ocrRegion(worker, img, CHARM_REGIONS.skill2Name, scaleX, scaleY);
+    setOcrProgress('スキル2ポイント 認識中...', 90);
+    const rawSkill2Pts  = await ocrRegion(worker, img, CHARM_REGIONS.skill2Pts,  scaleX, scaleY);
+    setOcrProgress('スロット 認識中...', 94);
+    const rawSlots      = await ocrRegion(worker, img, CHARM_REGIONS.slots,      scaleX, scaleY);
+    setOcrProgress('解析完了', 100);
+
+    if (pw) pw.style.display = 'none';
+
+    // 領域ごとの結果を組み合わせてテキストを構築
+    const regionTexts = {
+      charmName:  rawCharmName,
+      skill1Name: rawSkill1Name,
+      skill1Pts:  rawSkill1Pts,
+      skill2Name: rawSkill2Name,
+      skill2Pts:  rawSkill2Pts,
+      slots:      rawSlots,
+    };
+
+    // デバッグ表示更新
+    const debugArea = document.getElementById('regionDebugArea');
+    if (debugArea) {
+      debugArea.innerHTML = Object.entries(regionTexts)
+        .map(([k, v]) => `<span><b>${k}:</b> 「${v.replace(/\n/g,' ')}」</span>`)
+        .join('');
+    }
+
+    // 座標ベース結果を parseRegionResults へ
+    parseRegionResults(regionTexts, statusArea);
+
+  } catch(err) {
+    if (pw) pw.style.display = 'none';
+    statusArea.innerHTML = `<div class="ai-error">⚠ OCRエラー: ${err.message || err}<br>
+      <span style="font-size:10px;">ネット接続を確認して再度お試しください（初回のみ日本語モデル約12MBをダウンロード）</span></div>`;
+  }
+}
+
+function toggleRegionDebug() {
+  const d = document.getElementById('regionDebugArea');
+  if (d) d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── 座標ベースOCR結果を護石データにパース ──
+function parseRegionResults(regions, statusArea) {
+  const { charmName, skill1Name, skill1Pts, skill2Name, skill2Pts, slots } = regions;
+
+  // 正規化
+  const norm = s => normalizeOcrText(s || '').replace(/\s+/g, '');
+
+  // 護石名から種別を判定
+  const charmNameNorm = norm(charmName);
+  let detectedKind = aiCurrentKind;
+  if (/風化/.test(charmNameNorm))       detectedKind = 0;
+  else if (/古びた/.test(charmNameNorm)) detectedKind = 1;
+  else if (/光る/.test(charmNameNorm))   detectedKind = 2;
+  else if (/なぞ/.test(charmNameNorm))   detectedKind = 3;
+  else if (/兵士/.test(charmNameNorm))   detectedKind = 0; // 兵士の護石→風化系
+  else if (/闘士/.test(charmNameNorm))   detectedKind = 0;
+  else if (/天の/.test(charmNameNorm))   detectedKind = 0;
+  setAiKind(detectedKind);
+  const kd = KIND_DATA[detectedKind];
+
+  // スキル名をOCRテキストから抽出
+  const s1RawName = norm(skill1Name);
+  const s2RawName = norm(skill2Name);
+
+  // ポイントを抽出（+数字）
+  const extractPts = (s) => {
+    const nm = norm(s).match(/\+?(\d+)/);
+    return nm ? parseInt(nm[1]) : 0;
+  };
+  const s1Pts = extractPts(skill1Pts);
+  const s2Pts = extractPts(skill2Pts);
+
+  // スロット数を抽出（○の数）
+  const slotsNorm = norm(slots);
+  let slotCount = (slotsNorm.match(/[○OoC0]/g) || []).length;
+  if (/---/.test(slotsNorm) && slotCount === 0) slotCount = 0;
+  slotCount = Math.min(3, slotCount);
+
+  // スキルをデータベースにマッチ
+  const s1GIdx = findSkillIdxByOcr(s1RawName);
+  const s2GIdx = s2RawName.length > 0 && !/^[-ーーー]+$/.test(s2RawName)
+                 ? findSkillIdxByOcr(s2RawName) : -1;
+
+  // 全テキストを結合してフォールバック解析も実施
+  const combinedRaw = [
+    charmName, 'スロット ' + slots,
+    '固有スキル1 ' + skill1Name + ' ' + skill1Pts,
+    '固有スキル2 ' + skill2Name + ' ' + skill2Pts
+  ].join('\n');
+  document.getElementById('aiOcrRaw').textContent =
+    `[座標ベース認識]\n護石名: ${charmName}\nスキル1: ${skill1Name} | +: ${skill1Pts}\nスキル2: ${skill2Name} | +: ${skill2Pts}\nスロット: ${slots}`;
+
+  // s1GIdx が見つからない場合はフォールバックとして既存のパース処理を使う
+  if (s1GIdx < 0 && s2GIdx < 0) {
+    // 既存パース処理で再試行
+    parseOcrResult(combinedRaw, statusArea);
+    return;
+  }
+
+  const kindNames = ['風化したお守り','古びたお守り','光るお守り','なぞのお守り'];
+  let s1 = null, s2 = null;
+
+  if (s1GIdx >= 0) {
+    const lIdx1 = kd.skill1.indexOf(s1GIdx);
+    if (lIdx1 >= 0) {
+      const [mn, mx] = kd.sp1[lIdx1];
+      s1 = { gIdx: s1GIdx, lIdx: lIdx1, pts: Math.max(mn, Math.min(mx, s1Pts||mn)), name: SKILL[s1GIdx], rawName: s1RawName };
+    }
+  }
+  if (s2GIdx >= 0 && s2GIdx !== s1GIdx) {
+    const lIdx2 = kd.skill2.indexOf(s2GIdx);
+    if (lIdx2 >= 0) {
+      const [mn, mx] = kd.sp2[lIdx2];
+      s2 = { gIdx: s2GIdx, lIdx: lIdx2, pts: Math.max(mn, Math.min(mx, s2Pts||mn)), name: SKILL[s2GIdx], rawName: s2RawName };
+    }
+  }
+
+  if (!s1 && s1GIdx < 0) {
+    // フォールバック
+    parseOcrResult(combinedRaw, statusArea);
+    return;
+  }
+
+  aiRecognizedData = { kindIdx: detectedKind, s1, s2, slots: slotCount, charmName: charmNameNorm || kindNames[detectedKind] };
+
+  const slotChar = ['[---]','[○]','[○○]','[○○○]'][slotCount];
+  const s1Warn = s1 && s1.rawName !== s1.name ? ` <span style="color:var(--yellow);font-size:9px;">(OCR:${s1.rawName}→補正)</span>` : '';
+  const s2Warn = s2 && s2.rawName !== s2.name ? ` <span style="color:var(--yellow);font-size:9px;">(OCR:${s2.rawName}→補正)</span>` : '';
+
+  document.getElementById('aiResultBody').innerHTML = `
+    <div class="ai-row"><span class="lbl">護石名</span><span class="val" style="color:var(--steel2);font-weight:700;">${aiRecognizedData.charmName}</span></div>
+    <div class="ai-row"><span class="lbl">種類</span><span class="val">${kindNames[detectedKind]}</span></div>
+    <div class="ai-row"><span class="lbl">固有スキル1</span>
+      <span class="val">${s1 ? s1.name : '<span style="color:var(--text3)">なし</span>'}${s1Warn}</span>
+      ${s1 ? `<span class="pts">${s1.pts}pt</span>` : ''}
+    </div>
+    <div class="ai-row"><span class="lbl">固有スキル2</span>
+      <span class="val">${s2 ? s2.name : '<span style="color:var(--text3)">なし</span>'}${s2Warn}</span>
+      ${s2 ? `<span class="pts">${s2.pts}pt</span>` : ''}
+    </div>
+    <div class="ai-row"><span class="lbl">スロット</span>
+      <span class="val" style="color:var(--steel2);font-family:monospace;font-size:13px;">${slotChar}</span>
+    </div>
+    <div class="ai-row" style="font-size:9px;color:var(--teal);"><span class="lbl">認識方式</span><span class="val">📍 座標ベース精密OCR</span></div>
+  `;
+  document.getElementById('aiResultCard').style.display = '';
+  aiRunSearch();
 }
 
 // ── ML Kit コールバック（Kotlin側から evaluateJavascript で呼ばれる） ──
@@ -4037,7 +4417,7 @@ function parseOcrResult(rawText, statusArea) {
   const s2Warn = s2 && s2.rawName !== s2.name ? ` <span style="color:var(--yellow);font-size:9px;">(OCR:${s2.rawName}→補正)</span>` : '';
 
   document.getElementById('aiResultBody').innerHTML = `
-    <div class="ai-row"><span class="lbl">護石名</span><span class="val" style="color:var(--gold2);font-weight:700;">${charmName}</span></div>
+    <div class="ai-row"><span class="lbl">護石名</span><span class="val" style="color:var(--steel2);font-weight:700;">${charmName}</span></div>
     <div class="ai-row"><span class="lbl">種類</span><span class="val">${kindNames[detectedKind]}</span></div>
     <div class="ai-row"><span class="lbl">固有スキル1</span>
       <span class="val">${s1 ? s1.name : '<span style="color:var(--text3)">なし</span>'}${s1Warn}</span>
@@ -4048,7 +4428,7 @@ function parseOcrResult(rawText, statusArea) {
       ${s2 ? `<span class="pts">${s2.pts}pt</span>` : ''}
     </div>
     <div class="ai-row"><span class="lbl">スロット</span>
-      <span class="val" style="color:var(--gold2);font-family:monospace;font-size:13px;">${slotChar}</span>
+      <span class="val" style="color:var(--steel2);font-family:monospace;font-size:13px;">${slotChar}</span>
     </div>
   `;
   document.getElementById('aiResultCard').style.display = '';
@@ -4103,6 +4483,294 @@ function aiRunSearch() {
   setSearchMode('skill');
   showToast(`🤖 OCR認識完了 → スキルから検索に反映: ${d.s1 ? d.s1.name+' '+d.s1.pts+'pt' : ''}${d.s2 ? ' / '+d.s2.name+' '+d.s2.pts+'pt' : ''}`);
   doSearch();
+}
+
+
+// =====================================================================
+// AIチャット検索 / 音声認識 (オフライン: Whisper via Transformers.js)
+// =====================================================================
+
+let mediaRecorder   = null;
+let audioChunks     = [];
+let voiceActive     = false;
+let _whisperPipe    = null;
+let _whisperLoading = false;
+
+async function _getWhisperPipe() {
+  if (_whisperPipe) return _whisperPipe;
+  if (_whisperLoading) {
+    await new Promise(r => {
+      const t = setInterval(() => { if (!_whisperLoading) { clearInterval(t); r(); } }, 300);
+    });
+    return _whisperPipe;
+  }
+  _whisperLoading = true;
+  addChatMsg('🔄 音声認識モデルを読み込み中...\n初回のみダウンロードが必要です（約80MB）。次回以降はキャッシュから即起動します。', 'system');
+  try {
+    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    env.allowLocalModels = false;
+    let lastFile = '';
+    _whisperPipe = await pipeline(
+      'automatic-speech-recognition',
+      'Xenova/whisper-tiny',
+      {
+        progress_callback: (p) => {
+          if (p.status === 'downloading' && p.file !== lastFile) {
+            lastFile = p.file;
+            addChatMsg(`⏬ ダウンロード中: ${p.file}`, 'system');
+          }
+        }
+      }
+    );
+    addChatMsg('✅ 音声認識モデル準備完了（オフライン動作可能）', 'system');
+  } catch(e) {
+    addChatMsg('⚠ モデル読み込みエラー: ' + e.message, 'system');
+    _whisperPipe = null;
+  }
+  _whisperLoading = false;
+  return _whisperPipe;
+}
+
+// チャットメッセージを追加
+function addChatMsg(text, role = 'ai') {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+// 音声入力のトグル（オフライン Whisper 実装）
+async function toggleVoice() {
+  const btn = document.getElementById('voiceBtn');
+
+  // 停止処理
+  if (voiceActive) {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    return;
+  }
+
+  // マイクアクセス
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e) {
+    const msg = e.name === 'NotAllowedError'
+      ? '🔒 マイク権限が必要です。アドレスバー横のアイコン→マイクを「許可」にしてください。'
+      : e.name === 'NotFoundError'
+      ? '🎙 マイクが見つかりません。接続を確認してください。'
+      : '⚠ マイクエラー: ' + e.message;
+    addChatMsg(msg, 'system');
+    return;
+  }
+
+  voiceActive = true;
+  btn.classList.add('recording');
+  btn.textContent = '⏹';
+  addChatMsg('🎤 話してください...（もう一度タップで停止）', 'system');
+
+  audioChunks = [];
+  const mimeType =
+    MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
+    MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
+    MediaRecorder.isTypeSupported('audio/ogg')  ? 'audio/ogg'  : '';
+  try {
+    mediaRecorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream);
+  } catch(e) {
+    mediaRecorder = new MediaRecorder(stream);
+  }
+
+  mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+  mediaRecorder.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    voiceActive = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤';
+
+    if (audioChunks.length === 0) {
+      addChatMsg('🔇 音声データがありませんでした。', 'system');
+      return;
+    }
+
+    addChatMsg('🔄 音声を認識中...', 'system');
+
+    try {
+      // 録音データ → 16kHz mono Float32Array へ変換
+      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      const float32 = audioBuffer.getChannelData(0);
+      await audioCtx.close();
+
+      // Whisper で文字起こし
+      const pipe = await _getWhisperPipe();
+      if (!pipe) {
+        addChatMsg('⚠ 音声認識パイプラインが初期化されていません。', 'system');
+        return;
+      }
+
+      const result = await pipe(float32, {
+        language: 'japanese',
+        task: 'transcribe',
+        return_timestamps: false,
+      });
+
+      const transcript = (result.text || '').trim();
+      if (!transcript) {
+        addChatMsg('🔇 音声が検出されませんでした。もう一度お試しください。', 'system');
+        return;
+      }
+
+      document.getElementById('chatInput').value = transcript;
+      addChatMsg(`🎤 認識: 「${transcript}」`, 'system');
+      sendChat();
+    } catch(e) {
+      addChatMsg('⚠ 音声認識エラー: ' + e.message, 'system');
+    }
+  };
+
+  mediaRecorder.start();
+}
+
+// AI音声出力（SpeechSynthesis）
+function speakAI(text) {
+  if (!window.speechSynthesis) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ja-JP';
+  utterance.rate = 1.1;
+  window.speechSynthesis.speak(utterance);
+}
+
+// チャット送信 → NLPパース → 検索実行
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = (input.value || '').trim();
+  if (!text) return;
+  input.value = '';
+  addChatMsg(text, 'user');
+
+  // 少し待ってから返答（UX向け）
+  setTimeout(() => processChatCommand(text), 120);
+}
+
+// ── NLPルールベース処理 ──
+function processChatCommand(text) {
+  const norm = text.replace(/[　\s]+/g, ' ').replace(/[！？。、]/g, '');
+
+  // ヘルプ
+  if (/ヘルプ|使い方|何ができ|how/.test(norm)) {
+    const msg = `使い方:
+・「連撃+4 痛撃+5 3スロのフレームは？」
+・「千里眼3 のお守りを探して」
+・「氷耐性+3 スロット1 風化を検索」
+・スキル名 + 数値の条件を自由に組み合わせてください`;
+    addChatMsg(msg, 'ai');
+    speakAI('スキル名と数値で検索できます');
+    return;
+  }
+
+  // リセット
+  if (/リセット|クリア|最初から|clear/.test(norm)) {
+    addChatMsg('🔄 検索条件をリセットしました', 'ai');
+    document.getElementById('skill1Select').value = '-1';
+    document.getElementById('skill2Select').value = '-1';
+    updateSkill1Pts(); updateSkill2Pts();
+    setSlot(0);
+    return;
+  }
+
+  // 護石種別の検出
+  let kind = aiCurrentKind;
+  if (/風化/.test(norm))    kind = 0;
+  else if (/古びた/.test(norm)) kind = 1;
+  else if (/光る/.test(norm))   kind = 2;
+  else if (/なぞ/.test(norm))   kind = 3;
+
+  // スロット数の検出
+  let slots = -1;
+  const slotM = norm.match(/([0-3１２３])\s*スロ|スロット?\s*([0-3１２３])/);
+  if (slotM) {
+    const sv = slotM[1] || slotM[2];
+    slots = parseInt(sv.replace('０','0').replace('１','1').replace('２','2').replace('３','3'));
+  }
+  if (/スロなし|スロット?なし|0スロ/.test(norm)) slots = 0;
+
+  // スキル名と数値の抽出（「連撃+4」「痛撃5」「千里眼 3」等）
+  const skillMatches = [];
+  // パターン1: スキル名+数値が連続
+  const re1 = /([ぁ-んァ-ン一-龥々〆〇ー]{2,6})[+＋]?(\d+)/g;
+  let m;
+  while ((m = re1.exec(norm)) !== null) {
+    const rawName = m[1];
+    const pts = parseInt(m[2]);
+    const gIdx = findSkillIdxByOcr(rawName);
+    if (gIdx >= 0 && pts >= 1 && pts <= 20) {
+      skillMatches.push({ gIdx, pts, name: SKILL[gIdx], rawName });
+    }
+  }
+  // パターン2: スキル名 スペース 数値
+  const re2 = /([ぁ-んァ-ン一-龥々〆〇ー]{2,6})\s+(\d+)/g;
+  while ((m = re2.exec(norm)) !== null) {
+    const rawName = m[1];
+    const pts = parseInt(m[2]);
+    if (pts < 1 || pts > 20) continue;
+    const gIdx = findSkillIdxByOcr(rawName);
+    if (gIdx >= 0 && !skillMatches.some(s => s.gIdx === gIdx)) {
+      skillMatches.push({ gIdx, pts, name: SKILL[gIdx], rawName });
+    }
+  }
+
+  if (skillMatches.length === 0) {
+    addChatMsg('⚠ スキル名を認識できませんでした。\n例：「連撃+4 痛撃+5 3スロット」のように入力してください。', 'ai');
+    speakAI('スキル名を認識できませんでした');
+    return;
+  }
+
+  // KIND DATA でマッチング
+  setKind(kind);
+  const kd = KIND_DATA[kind];
+
+  let s1Applied = false, s2Applied = false;
+  for (const sk of skillMatches) {
+    const lIdx1 = kd.skill1.indexOf(sk.gIdx);
+    if (!s1Applied && lIdx1 >= 0) {
+      document.getElementById('skill1Select').value = String(lIdx1);
+      updateSkill1Pts();
+      const el = document.getElementById('skill1Pts');
+      if (el) { const [mn,mx] = kd.sp1[lIdx1]; el.value = Math.max(mn, Math.min(mx, sk.pts)); }
+      s1Applied = true;
+      continue;
+    }
+    const lIdx2 = kd.skill2.indexOf(sk.gIdx);
+    if (!s2Applied && lIdx2 >= 0 && s1Applied) {
+      document.getElementById('skill2Select').value = String(lIdx2);
+      updateSkill2Pts();
+      const el = document.getElementById('skill2Pts');
+      if (el) { const [mn,mx] = kd.sp2[lIdx2]; el.value = Math.max(mn, Math.min(mx, sk.pts)); }
+      s2Applied = true;
+    }
+  }
+
+  if (slots >= 0) setSlot(slots);
+
+  setSearchMode('skill');
+  doSearch();
+
+  // 結果サマリを表示
+  const kindNames = ['風化','古びた','光る','なぞの'];
+  const slotsDesc = slots < 0 ? '' : `スロット${slots} `;
+  const skillDesc = skillMatches.slice(0,2).map(s => `${s.name}+${s.pts}`).join(' / ');
+  const reply = `🔍 検索条件を設定しました\n護石: ${kindNames[kind]}\nスキル: ${skillDesc}\n${slotsDesc}\n→「スキルから検索」タブで結果を確認してください`;
+  addChatMsg(reply, 'ai');
+  speakAI(`${skillDesc}を検索します`);
 }
 
 window.onload = function() {
