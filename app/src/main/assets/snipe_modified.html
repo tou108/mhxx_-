@@ -856,7 +856,7 @@ body.light-mode .app-header {
         <div class="ai-guide">
           <strong>🤖 AI護石フレーム自動検索</strong><br>
           マカ錬金の鑑定結果画面を撮影してアップロードするだけで、OCRが護石を認識しフレームを自動検索します。<br>
-          <em style="color:var(--text3);font-size:10px;">使用技術: Google ML Kit OCR (Japanese) ／ RNG解析: apmnnn/mhxx-rng (MIT)</em>
+          <em style="color:var(--text3);font-size:10px;">使用技術: Google ML Kit Text Recognition (Japanese) ／ RNG解析: apmnnn/mhxx-rng (MIT)</em>
           <div class="reward-step" style="margin-top:6px;"><div class="reward-step-num">1</div><span>Switch画面（スキル名・数値・スロットが見える状態）を撮影。</span></div>
           <div class="reward-step"><div class="reward-step-num">2</div><span>下の枠に画像をドロップ、またはタップして選択。</span></div>
           <div class="reward-step"><div class="reward-step-num">3</div><span>OCRが解析し一致フレームを自動表示します。</span></div>
@@ -1000,9 +1000,9 @@ body.light-mode .app-header {
         <label><input type="checkbox" id="countdownSoundEnable" checked> サウンド</label>
       </div>
       <div class="timer-controls">
-        <button class="t-btn t-start" id="startCountdownBtn">開始</button>
-        <button class="t-btn t-stop" id="stopCountdownBtn">停止</button>
-        <button class="t-btn t-reset" id="resetCountdownBtn">リセット</button>
+        <button class="t-btn t-start" id="startCountdownBtn" onclick="initAndStartCountdown()">開始</button>
+        <button class="t-btn t-stop" id="stopCountdownBtn" onclick="stopCountdownTimer()">停止</button>
+        <button class="t-btn t-reset" id="resetCountdownBtn" onclick="resetCountdownTimer()">リセット</button>
       </div>
     </div>
 
@@ -1277,7 +1277,8 @@ const SKILL_ALIASES = {
   'ここ':138,'ここっと':138,
   'ポッ':139,'ポッケ':139,
   'ユク':140,'ユクモ':140,
-  '龍識':141,'龍識船':141,'飛行':142,'飛行酒場':142,
+  '龍識':141,'龍識船':141,
+  '飛行':142,'飛行酒場':142,
   '紅兜':143,
   '大雪':144,'大雪主':144,
   '矛砕':145,'岩穿':146,
@@ -1314,19 +1315,19 @@ const SKILL_ALIASES = {
   '斬術':180,'食欲':181,'職工':182,'剛腕':183,'祈願':184,
   '裏稼':185,'裏稼業':185,
   '刀匠':186,'射手':187,
-  '状態':188,'状態耐性':188,'状態異常':188,
-  '怒':189,
+  '状態':188,'状態耐性':188,
+  '怒':189,'怒り':189,
   '回術':190,'回避術':190,
   '居合':191,'頑強':192,
   '剛撃':193,'刚擎':193,'刚撃':193,'剛擎':193,
-  '盾持':194,'盾持ち':194,
+  '盾持':194,
   '潔癖':195,
-  '増幅':196,'增幅':196,'増幅剤':196,
+  '増幅':196,'增幅':196,
   '護収':197,'護石収集':197,
   '強欲':198,
-  '対鋼':199,'対銅':199,'対鋼龍':199,'対鋼鉄':199,
+  '対鋼':199,'対銅':199,'対鋼龍':199,
   '対霞':200,'対霞龍':200,'対炎':201,'対炎龍':201,
-  '胴倍':202,'酮倍':202,'胴系統倍加':202,'胴倍加':202,
+  '胴倍':202,'酮倍':202,'胴系統倍加':202,'胴系':202,
   '秘術':203,'護強':204,'護石強化':204,
 };
 
@@ -3041,6 +3042,7 @@ function initMultiBtnGrid() {
     {btn:'R_STICK', label:'R3', style:'color:var(--purple2);'},
   ];
   const grid = document.getElementById('multiBtnGrid');
+  if (!grid) return; // コントローラーUIが未実装の場合はスキップ
   grid.innerHTML = allBtns.map(b =>
     '<label class="multi-chk" id="multichk-' + b.btn + '" onclick="toggleMultiChk(this)">' +
     '<input type="checkbox" value="' + b.btn + '"> <span style="' + b.style + '">' + b.label + '</span></label>'
@@ -3368,7 +3370,7 @@ function exportMacroJson() {
 
 // =====================================================================
 // AI護石OCR認識
-// OCRエンジン: Google ML Kit Text Recognition (Japanese) ／ APK専用・オフライン高精度
+// OCRエンジン: Google ML Kit Text Recognition (Japanese)
 // RNGアルゴリズム・データ: apmnnn/mhxx-rng (MIT License)
 // Copyright (c) 2026 apmnnn
 // =====================================================================
@@ -3428,6 +3430,8 @@ function aiClear() {
     '<div class="no-results">護石画像をアップロードしてOCR解析してください</div>';
   document.getElementById('resultCount').textContent = '--';
 }
+
+// ---- Google ML Kit OCR コールバック用ユーティリティ ----
 
 // ---- 連結されたスキル名を分割 (例: "連撃痛撃" → [{連撃,pts1},{痛撃,pts2}]) ----
 function splitConcatenatedSkills(rawFull, defaultPts, fullText) {
@@ -3534,8 +3538,7 @@ function receiveMlKitResult(jsonStr) {
   }
 }
 
-// ---- Normalize raw OCR text: remove inter-character spaces, fix character misreads ----
-// ※ OCRエンジン: Google ML Kit Text Recognition (Japanese)
+// ---- Normalize raw OCR text: remove inter-character spaces, fix digit misreads ----
 function normalizeOcrText(raw) {
   let t = raw;
 
@@ -3565,13 +3568,27 @@ function normalizeOcrText(raw) {
     .replace(/属擊/g,  '属撃')
     .replace(/擊/g,    '撃');    // 全般的な旧字体→新字体
 
-  // 1. Remove spaces inserted between non-ASCII (Japanese) characters
+  // 1. ML Kit OCR の数字誤読補正（＋記号の後ろに来るひらがな/カタカナを数字に変換）
+  //    ゲームフォントで類似形状の文字が誤認識されやすい
+  t = t
+    .replace(/[+]\s*[うウ]/g, '+5')   // う/ウ ≈ 5
+    .replace(/[+]\s*[よヨ]/g, '+4')   // よ/ヨ ≈ 4
+    .replace(/[+]\s*[にニ]/g, '+2')   // に/ニ ≈ 2
+    .replace(/[+]\s*[さサ]/g, '+3')   // さ/サ ≈ 3
+    .replace(/[+]\s*[ろロ]/g, '+6')   // ろ/ロ ≈ 6
+    .replace(/[+]\s*[なナ]/g, '+7')   // な/ナ ≈ 7
+    .replace(/[+]\s*[やヤ]/g, '+8')   // や/ヤ ≈ 8
+    .replace(/[+]\s*[くク]/g, '+9')   // く/ク ≈ 9
+    .replace(/[+]\s*[とト]/g, '+10')  // と/ト ≈ 10
+    .replace(/[+]\s*[いイ]/g, '+1');  // い/イ ≈ 1
+
+  // 2. Remove spaces inserted between non-ASCII (Japanese) characters
   //    Run multiple passes to collapse e.g. "連 撃" → "連撃"
   for (let i = 0; i < 4; i++) {
     t = t.replace(/([\u3000-\u9FFF\uF900-\uFAFF])\s+([\u3000-\u9FFF\uF900-\uFAFF])/g, '$1$2');
   }
 
-  // 2. Also collapse spaces around "+" that follow Japanese text
+  // 3. Also collapse spaces around "+" that follow Japanese text
   t = t.replace(/([\u3000-\u9FFF\uF900-\uFAFF])\s+([+])/g, '$1$2');
 
   return t;
