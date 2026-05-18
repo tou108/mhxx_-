@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.mhxx.snipe'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.mhxx.snipe"
+        minSdk 26          // Android 8.0以上（ML Kit Japanese の推奨）
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 署名設定は keystore.properties を別途作成してください
+            // signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // assets フォルダをソースセットに含める
+    sourceSets {
+        main {
+            assets.srcDirs = ['src/main/assets']
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    // ★ Google ML Kit 日本語テキスト認識
+    // 日本語特化モデル（縦書き・ゲームフォント対応）
+    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0'
+}
