@@ -3469,6 +3469,32 @@ function preprocessCharmImage(dataUrl) {
   });
 }
 
+// ---- 連結されたスキル名を分割 (例: "連撃痛撃" → [{連撃,pts1},{痛撃,pts2}]) ----
+function splitConcatenatedSkills(rawFull, defaultPts, fullText) {
+  const results = [];
+  for (let i = 0; i < SKILL.length; i++) {
+    if (!SKILL[i] || SKILL[i].length < 2) continue;
+    const pos = rawFull.indexOf(SKILL[i]);
+    if (pos < 0) continue;
+    const rest = rawFull.slice(0, pos) + rawFull.slice(pos + SKILL[i].length);
+    for (let j = 0; j < SKILL.length; j++) {
+      if (j === i || !SKILL[j] || SKILL[j].length < 2) continue;
+      if (!rest.includes(SKILL[j])) continue;
+      const findPts = (name) => {
+        const idx = fullText.indexOf(name);
+        if (idx < 0) return defaultPts;
+        const after = fullText.substring(idx + name.length, idx + name.length + 20);
+        const m = after.match(/[+＋]\s*(\d+)/);
+        return m ? parseInt(m[1]) : defaultPts;
+      };
+      results.push({ rawName: SKILL[i], pts: findPts(SKILL[i]) });
+      results.push({ rawName: SKILL[j], pts: findPts(SKILL[j]) });
+      return results;
+    }
+  }
+  return results;
+}
+
 // ---- Find SKILL global index from raw OCR string using SKILL_ALIASES ----
 function findSkillIdxByOcr(rawName) {
   const n = rawName.trim();
@@ -3847,16 +3873,14 @@ function parseOcrResult(rawText, statusArea) {
       if (pts >= 1 && pts <= 20) { targetArr.push({ rawName: mSame[1].trim(), pts }); continue; }
     }
 
-    // 次行パターン: ラベル行の直後にスキル名とポイントがある
-    if (li + 1 < lines.length) {
-      const nxt = lines[li + 1];
-      // 次行が別の固有スキルラベルでないこと
-      if (!/固有スキル/.test(nxt)) {
-        const mNext = nxt.match(/^([^\d+\s][^\d+]{0,7}?)\s*[+]\s*(\d+)/);
-        if (mNext) {
-          const pts = parseInt(mNext[2]);
-          if (pts >= 1 && pts <= 20) targetArr.push({ rawName: mNext[1].trim(), pts });
-        }
+    // 次行パターン: ラベル行の直後4行以内にスキル名とポイントがある（OCR列読み対応）
+    for (let offset = 1; offset <= 4 && li + offset < lines.length; offset++) {
+      const nxt = lines[li + offset];
+      if (/固有スキル/.test(nxt)) break;
+      const mNext = nxt.match(/^([^\d+\s][^\d+]{0,7}?)\s*[+]\s*(\d+)/);
+      if (mNext) {
+        const pts = parseInt(mNext[2]);
+        if (pts >= 1 && pts <= 20) { targetArr.push({ rawName: mNext[1].trim(), pts }); break; }
       }
     }
   }
@@ -3893,6 +3917,15 @@ function parseOcrResult(rawText, statusArea) {
     if (pts < 1 || pts > 20) continue;
 
     // フルの rawName を登録
+    // 連結スキル名（例:「連撃痛撃」）を検出して分割
+    const splitResult = splitConcatenatedSkills(rawFull, pts, fullText);
+    if (splitResult.length > 0) {
+      for (const sr of splitResult) {
+        if (!foundSkills.some(x => x.rawName === sr.rawName && x.pts === sr.pts))
+          foundSkills.push(sr);
+      }
+      continue; // 結合名はそのまま登録しない
+    }
     if (rawFull.length >= 1 && !foundSkills.some(x => x.rawName === rawFull && x.pts === pts))
       foundSkills.push({ rawName: rawFull, pts });
 
@@ -3907,10 +3940,20 @@ function parseOcrResult(rawText, statusArea) {
 
   // Strategy C: known skill name reverse-lookup (most reliable for partial OCR)
   const knownFound = extractSkillsByKnownNames(fullText, kd);
-  for (const kf of knownFound) {
-    if (!foundSkills.some(x => x.rawName === kf.rawName && x.pts === kf.pts))
-      foundSkills.push({ rawName: kf.rawName, pts: kf.pts, _gIdx: kf.gIdx });
-  }
+  // テキスト中の出現順にソートしてスロット番号を付与（列読みOCR対応）
+  const newFromC = knownFound.filter(kf =>
+    !foundSkills.some(x => x.rawName === kf.rawName && x.pts === kf.pts));
+  newFromC.sort((a, b) => {
+    const posA = fullText.indexOf(a.rawName);
+    const posB = fullText.indexOf(b.rawName);
+    return posA - posB;
+  });
+  newFromC.forEach((kf, i) => {
+    const hasS1 = foundSkills.some(x => x._slot === 1);
+    const hasS2 = foundSkills.some(x => x._slot === 2);
+    const slot = (!hasS1 && i === 0) ? 1 : (!hasS2 && i === 1) ? 2 : undefined;
+    foundSkills.push({ rawName: kf.rawName, pts: kf.pts, _gIdx: kf.gIdx, _slot: slot });
+  });
 
   // --- Match to SKILL indices ---
   // 固有スキル1候補(_slot:1)はkd.skill1に、固有スキル2候補(_slot:2)はkd.skill2に優先マッチ
