@@ -850,13 +850,13 @@ body.light-mode .app-header {
     </div><!-- /questRewardForm -->
 
     <!-- ======== AI護石OCR認識フォーム ======== -->
-    <!-- OCRエンジン: Tesseract.js (MIT) / RNGアルゴリズム: apmnnn/mhxx-rng (MIT) -->
+    <!-- OCRエンジン: Google ML Kit Japanese OCR / RNGアルゴリズム: apmnnn/mhxx-rng (MIT) -->
     <div id="aiRecogForm" style="display:none;">
       <div class="search-form">
         <div class="ai-guide">
           <strong>🤖 AI護石フレーム自動検索</strong><br>
           マカ錬金の鑑定結果画面を撮影してアップロードするだけで、OCRが護石を認識しフレームを自動検索します。<br>
-          <em style="color:var(--text3);font-size:10px;">使用技術: Tesseract.js OCR (MIT) ／ RNG解析: apmnnn/mhxx-rng (MIT)</em>
+          <em style="color:var(--text3);font-size:10px;">使用技術: Google ML Kit OCR (Japanese) ／ RNG解析: apmnnn/mhxx-rng (MIT)</em>
           <div class="reward-step" style="margin-top:6px;"><div class="reward-step-num">1</div><span>Switch画面（スキル名・数値・スロットが見える状態）を撮影。</span></div>
           <div class="reward-step"><div class="reward-step-num">2</div><span>下の枠に画像をドロップ、またはタップして選択。</span></div>
           <div class="reward-step"><div class="reward-step-num">3</div><span>OCRが解析し一致フレームを自動表示します。</span></div>
@@ -3082,30 +3082,31 @@ var selectedMacroIdx = -1;
 var macroPlayActive = false;
 var macroPlayTimers = [];
 
+function _mEl(id) { return document.getElementById(id); }
+function _mShow(id, v) { var e=_mEl(id); if(e) e.style.display = v===undefined?'':v; }
+function _mHide(id) { var e=_mEl(id); if(e) e.style.display='none'; }
+function _mText(id, t) { var e=_mEl(id); if(e) e.textContent=t; }
+
 function startMacroRec() {
   macroRecording = true;
   macroRecSteps = [];
   macroRecLastTime = Date.now();
-  document.getElementById('macroRecBtn').style.display = 'none';
-  document.getElementById('macroStopRecBtn').style.display = '';
-  document.getElementById('macroRecStatus').style.display = '';
-  document.getElementById('macroRecStepCount').textContent = '0';
-  document.getElementById('macroCurrentPreview').style.display = 'none';
-  document.getElementById('macroSaveArea').style.display = 'none';
+  _mHide('macroRecBtn'); _mShow('macroStopRecBtn'); _mShow('macroRecStatus');
+  _mText('macroRecStepCount', '0');
+  _mHide('macroCurrentPreview'); _mHide('macroSaveArea');
   showToast('⏺ マクロ記録開始！コントローラーを操作してください');
 }
 
 function stopMacroRec() {
   macroRecording = false;
-  document.getElementById('macroRecBtn').style.display = '';
-  document.getElementById('macroStopRecBtn').style.display = 'none';
-  document.getElementById('macroRecStatus').style.display = 'none';
+  _mShow('macroRecBtn'); _mHide('macroStopRecBtn'); _mHide('macroRecStatus');
   if (macroRecSteps.length === 0) { showToast('⚠ 記録ステップが0です'); return; }
-  document.getElementById('macroCurrentPreview').style.display = '';
+  _mShow('macroCurrentPreview');
   renderMacroPreview(macroRecSteps, 'macroCurrentSteps');
-  document.getElementById('macroSaveArea').style.display = '';
+  _mShow('macroSaveArea');
   var d = new Date();
-  document.getElementById('macroSaveName').value = 'マクロ_' + d.getHours().toString().padStart(2,'0') + d.getMinutes().toString().padStart(2,'0') + d.getSeconds().toString().padStart(2,'0');
+  var sn = _mEl('macroSaveName');
+  if (sn) sn.value = 'マクロ_' + d.getHours().toString().padStart(2,'0') + d.getMinutes().toString().padStart(2,'0') + d.getSeconds().toString().padStart(2,'0');
   showToast('⏹ 記録停止: ' + macroRecSteps.length + 'ステップ');
 }
 
@@ -3118,7 +3119,7 @@ function macroRecordStep(step) {
   }
   macroRecLastTime = now;
   macroRecSteps.push(step);
-  document.getElementById('macroRecStepCount').textContent = macroRecSteps.length;
+  _mText('macroRecStepCount', macroRecSteps.length);
 }
 
 function renderMacroPreview(steps, elId) {
@@ -3134,27 +3135,28 @@ function renderMacroPreview(steps, elId) {
 }
 
 function saveMacroRec() {
-  var name = document.getElementById('macroSaveName').value.trim() || ('マクロ_' + (savedMacros.length + 1));
+  var sn = _mEl('macroSaveName');
+  var name = (sn ? sn.value.trim() : '') || ('マクロ_' + (savedMacros.length + 1));
   savedMacros.push({ name: name, steps: macroRecSteps.slice(), createdAt: Date.now() });
   macroRecSteps = [];
-  document.getElementById('macroCurrentPreview').style.display = 'none';
-  document.getElementById('macroSaveArea').style.display = 'none';
+  _mHide('macroCurrentPreview'); _mHide('macroSaveArea');
   renderMacroList();
   showToast('💾 "' + name + '" を保存しました');
 }
 
 function discardMacroRec() {
   macroRecSteps = [];
-  document.getElementById('macroCurrentPreview').style.display = 'none';
-  document.getElementById('macroSaveArea').style.display = 'none';
+  _mHide('macroCurrentPreview'); _mHide('macroSaveArea');
   showToast('✕ 記録を破棄しました');
 }
 
 function renderMacroList() {
   var el = document.getElementById('macroListEl');
+  if (!el) return; // マクロUI未実装時はスキップ
   if (!savedMacros.length) {
     el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);font-size:11px;">保存済みマクロはありません</div>';
-    document.getElementById('macroPlaySection').style.display = 'none';
+    var ps = document.getElementById('macroPlaySection');
+    if (ps) ps.style.display = 'none';
     return;
   }
   el.innerHTML = savedMacros.map(function(m, i) {
@@ -3185,19 +3187,21 @@ function selectMacro(idx) {
   var m = savedMacros[idx];
   if (!m) return;
   var playSection = document.getElementById('macroPlaySection');
-  playSection.style.display = '';
+  if (playSection) playSection.style.display = '';
   var infoEl = document.getElementById('macroPlayInfo');
-  infoEl.innerHTML = '<strong style="color:var(--purple2);">' + m.name + '</strong> &nbsp; <span style="color:var(--text3);">' + m.steps.length + 'ステップ</span><br>';
-  renderMacroPreview(m.steps, 'macroPlayInfo');
-  document.getElementById('macroJsonEditor').value = JSON.stringify(m.steps, null, 2);
-  document.getElementById('macroJsonName').value = m.name + '_コピー';
+  if (infoEl) {
+    infoEl.innerHTML = '<strong style="color:var(--purple2);">' + m.name + '</strong> &nbsp; <span style="color:var(--text3);">' + m.steps.length + 'ステップ</span><br>';
+    renderMacroPreview(m.steps, 'macroPlayInfo');
+  }
+  var je = document.getElementById('macroJsonEditor'); if (je) je.value = JSON.stringify(m.steps, null, 2);
+  var jn = document.getElementById('macroJsonName'); if (jn) jn.value = m.name + '_コピー';
 }
 
 function deleteMacro(idx) {
   var name = savedMacros[idx].name;
   savedMacros.splice(idx, 1);
   if (selectedMacroIdx >= savedMacros.length) selectedMacroIdx = savedMacros.length - 1;
-  if (selectedMacroIdx < 0) document.getElementById('macroPlaySection').style.display = 'none';
+  if (selectedMacroIdx < 0) _mHide('macroPlaySection');
   renderMacroList();
   showToast('🗑 "' + name + '" を削除しました');
 }
@@ -3216,8 +3220,8 @@ function executeMacroSteps(steps, loops) {
   if (macroPlayActive) return;
   macroPlayActive = true;
   macroPlayTimers = [];
-  document.getElementById('macroPlayBtn').style.display = 'none';
-  document.getElementById('macroStopPlayBtn').style.display = '';
+  document.getElementById('macroPlayBtn') && (document.getElementById('macroPlayBtn').style.display = 'none');
+  document.getElementById('macroStopPlayBtn') && (document.getElementById('macroStopPlayBtn').style.display = '');
   var statusEl = document.getElementById('macroPlayStatus');
   if (statusEl) statusEl.style.display = '';
   var loopsDone = 0;
@@ -3276,8 +3280,8 @@ function getStepDuration(step) {
 function playSelectedMacro() {
   if (selectedMacroIdx < 0 || !savedMacros[selectedMacroIdx]) { showToast('⚠ マクロを選択してください'); return; }
   var m = savedMacros[selectedMacroIdx];
-  var isInf = document.getElementById('macroPlayInfinite').checked;
-  var loops = isInf ? Infinity : (parseInt(document.getElementById('macroPlayLoops').value) || 1);
+  var isInf = (_mEl('macroPlayInfinite') || {checked:false}).checked;
+  var loops = isInf ? Infinity : (parseInt((_mEl('macroPlayLoops')||{value:'1'}).value) || 1);
   executeMacroSteps(m.steps, loops);
   showToast('▶ "' + m.name + '" 実行開始 (' + (isInf ? '∞' : loops) + '回)');
 }
@@ -3303,8 +3307,9 @@ function finishMacroPlay(completed) {
 }
 
 function saveJsonMacro() {
-  var name = document.getElementById('macroJsonName').value.trim() || ('JSONマクロ_' + (savedMacros.length + 1));
-  var jsonStr = document.getElementById('macroJsonEditor').value.trim();
+  var jnEl = _mEl('macroJsonName'), jeEl = _mEl('macroJsonEditor');
+  var name = (jnEl ? jnEl.value.trim() : '') || ('JSONマクロ_' + (savedMacros.length + 1));
+  var jsonStr = jeEl ? jeEl.value.trim() : '';
   try {
     var steps = JSON.parse(jsonStr);
     if (!Array.isArray(steps)) throw new Error('配列ではありません');
@@ -3315,7 +3320,8 @@ function saveJsonMacro() {
 }
 
 function executeJsonMacro() {
-  var jsonStr = document.getElementById('macroJsonEditor').value.trim();
+  var jeEl = _mEl('macroJsonEditor');
+  var jsonStr = jeEl ? jeEl.value.trim() : '';
   try {
     var steps = JSON.parse(jsonStr);
     if (!Array.isArray(steps)) throw new Error('配列ではありません');
@@ -3424,50 +3430,7 @@ function aiClear() {
 }
 
 // ---- Tesseract.js loader (CDN, loaded on first use) ----
-let _tesseractReady = false;
-let _tesseractWorker = null;
-
-function loadTesseractScript() {
-  return new Promise((resolve, reject) => {
-    if (window.Tesseract) { resolve(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-    s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-
-// ---- Image preprocessing: upscale + high-contrast binarize for game screenshots ----
-function preprocessCharmImage(dataUrl) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = function() {
-      const scale = 2.5;
-      const canvas = document.createElement('canvas');
-      canvas.width  = Math.round(img.width  * scale);
-      canvas.height = Math.round(img.height * scale);
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const d = imageData.data;
-      for (let i = 0; i < d.length; i += 4) {
-        const lum = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
-        // White/yellow text on dark MHXX UI -> bright=white, dark=black
-        const v = lum > 140 ? 255 : 0;
-        d[i] = d[i+1] = d[i+2] = v;
-        d[i+3] = 255;
-      }
-      ctx.putImageData(imageData, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = () => resolve(dataUrl);
-    img.src = dataUrl;
-  });
-}
+// ※ Tesseract.js は削除済み。OCRはGoogle ML Kit (APK) のみ使用。
 
 // ---- 連結されたスキル名を分割 (例: "連撃痛撃" → [{連撃,pts1},{痛撃,pts2}]) ----
 function splitConcatenatedSkills(rawFull, defaultPts, fullText) {
@@ -3531,9 +3494,7 @@ function findSkillIdxByOcr(rawName) {
 }
 
 // =====================================================================
-// OCR エンジン選択
-// APK (Android WebView) → Google ML Kit Japanese OCR  ★高精度・オフライン
-// ブラウザ              → Tesseract.js (fallback)
+// OCR エンジン: Google ML Kit Japanese OCR (APK専用・オフライン高精度)
 // =====================================================================
 
 async function runOcr(dataUrl) {
@@ -3552,27 +3513,9 @@ async function runOcr(dataUrl) {
     return;
   }
 
-  // ── ブラウザ fallback: Tesseract.js ──────────────────────────────
-  statusArea.innerHTML = `<div class="ai-analyzing"><span class="ai-spin">⚙</span> 画像前処理中... (Tesseract fallback)</div>`;
-  try {
-    await loadTesseractScript();
-    const processedUrl = await preprocessCharmImage(dataUrl);
-    statusArea.innerHTML = `<div class="ai-analyzing"><span class="ai-spin">⚙</span> OCR言語データ読み込み中...</div>`;
-    const result = await Tesseract.recognize(processedUrl, 'jpn', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          const pct = Math.round((m.progress || 0) * 100);
-          statusArea.innerHTML = `<div class="ai-analyzing"><span class="ai-spin">⚙</span> OCR認識中... ${pct}%</div>`;
-        }
-      },
-      tessedit_pageseg_mode: '6',
-    });
-    const rawText = result.data.text || '';
-    parseOcrResult(rawText, statusArea);
-  } catch (err) {
-    statusArea.innerHTML = `<div class="ai-error">⚠ OCRエラー: ${err.message || err}<br>
-      <span style="font-size:10px;color:var(--text3);">ネットワーク接続を確認（Tesseract.js CDN必要）</span></div>`;
-  }
+  // ── 非APK環境では利用不可 ──────────────────────────────────────
+  statusArea.innerHTML = `<div class="ai-error">⚠ AI認識機能はAPK（Android版）専用です。<br>
+    <span style="font-size:10px;color:var(--text3);">Google ML Kit OCRはAPK環境でのみ動作します。</span></div>`;
 }
 
 // ── ML Kit コールバック（Kotlin側から evaluateJavascript で呼ばれる） ──
@@ -4118,55 +4061,47 @@ function aiRunSearch() {
   const d = aiRecognizedData;
   if (!d.s1 && !d.s2) { showToast('⚠ スキルを認識できませんでした'); return; }
 
+  // ── Fix 2: スキルから検索タブにOCR結果を反映して doSearch() を呼ぶ ──
+  // 1. 護石種別を切り替え
+  setKind(aiCurrentKind);
+
+  // 2. スキル1をドロップダウンにセット
+  if (d.s1) {
+    const sel1 = document.getElementById('skill1Select');
+    sel1.value = String(d.s1.lIdx);
+    updateSkill1Pts();
+    const ptsEl1 = document.getElementById('skill1Pts');
+    if (ptsEl1) ptsEl1.value = d.s1.pts;
+  } else {
+    document.getElementById('skill1Select').value = '-1';
+    updateSkill1Pts();
+  }
+
+  // 3. スキル2をドロップダウンにセット
+  if (d.s2) {
+    const sel2 = document.getElementById('skill2Select');
+    sel2.value = String(d.s2.lIdx);
+    updateSkill2Pts();
+    const ptsEl2 = document.getElementById('skill2Pts');
+    if (ptsEl2) ptsEl2.value = d.s2.pts;
+  } else {
+    document.getElementById('skill2Select').value = '-1';
+    updateSkill2Pts();
+  }
+
+  // 4. スロットフィルタを設定
+  if (d.slots > 0) setSlot(d.slots); else setSlot(0);
+
+  // 5. フレーム範囲を取得（AI認識タブの値を使用）
   const fromF = parseInt(document.getElementById('aiFrameFrom').value) || 1;
   const toF   = parseInt(document.getElementById('aiFrameTo').value)   || 1000000;
+  document.getElementById('frameFrom').value = fromF;
+  document.getElementById('frameTo').value   = toF;
 
-  if (activeWorker) { activeWorker.terminate(); activeWorker = null; }
-
-  const wrap = document.getElementById('resultsWrap');
-  const slotDisp = ['[---]','[○]','[○○]','[○○○]'][d.slots];
-  wrap.innerHTML = `<div class="searching"><div>完全一致を検索中... スロット${slotDisp} / ${d.s1 ? d.s1.name+' '+d.s1.pts+'pt' : ''} ${d.s2 ? '/ '+d.s2.name+' '+d.s2.pts+'pt' : ''}</div><div class="progress-bar"></div></div>`;
-  document.getElementById('resultCount').textContent = '--';
-  document.getElementById('searchInfo').textContent  = 'AI-OCR 完全一致';
-
-  const blob = new Blob([buildWorkerCode()], { type: 'application/javascript' });
-  const url  = URL.createObjectURL(blob);
-  const w    = new Worker(url);
-  activeWorker = w;
-
-  w.onmessage = function(e) {
-    if (e.data.type === 'done') {
-      URL.revokeObjectURL(url);
-      activeWorker = null;
-      let results = e.data.results;
-      // 完全一致: スロット数も完全一致でフィルタ
-      if (d.slots > 0) results = results.filter(r => r.charm.slot === d.slots);
-      renderResults(results, fromF, toF);
-      showToast(`🤖 OCR完全一致検索完了: ${results.length.toLocaleString()}件`);
-    }
-  };
-  w.onerror = function() {
-    URL.revokeObjectURL(url);
-    activeWorker = null;
-    wrap.innerHTML = `<div class="no-results">⚠ 検索エラー</div>`;
-  };
-
-  w.postMessage({
-    fromF, toF,
-    kindIdx:   aiCurrentKind,
-    origin:    aiCurrentOrigin,
-    s1Idx:     d.s1 ? d.s1.lIdx : -1,
-    s2Idx:     d.s2 ? d.s2.lIdx : -1,
-    s1Pts:     d.s1 ? d.s1.pts  : 1,
-    s2Pts:     d.s2 ? d.s2.pts  : 1,
-    minSlot:   0,
-    maxN:      2000,
-    hasS1:     !!d.s1,
-    hasS2:     !!d.s2,
-    exactSlot: -1,   // slot filter done post-search above
-    exactPts:  true, // 完全一致：pt数も完全一致
-    mode:      'normal'
-  });
+  // 6. スキルから検索タブに切り替えてから doSearch() 実行
+  setSearchMode('skill');
+  showToast(`🤖 OCR認識完了 → スキルから検索に反映: ${d.s1 ? d.s1.name+' '+d.s1.pts+'pt' : ''}${d.s2 ? ' / '+d.s2.name+' '+d.s2.pts+'pt' : ''}`);
+  doSearch();
 }
 
 window.onload = function() {
