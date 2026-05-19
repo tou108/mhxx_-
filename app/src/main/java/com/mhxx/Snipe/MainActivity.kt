@@ -318,7 +318,7 @@ class MainActivity : AppCompatActivity() {
                 // フォーマット: "SysDVR|NN\0" (10バイト、NNはプロトコルバージョン)
                 val hello = ByteArray(HELLO_SIZE)
                 readFully(ins, hello)
-                val helloStr = String(hello, Charsets.ASCII).trimEnd('\u0000')
+                val helloStr = String(hello, Charsets.US_ASCII).trimEnd('\u0000')
                 if (!helloStr.startsWith("SysDVR|")) {
                     notifyDvrStatus(false, "Hello失敗: $helloStr")
                     return
