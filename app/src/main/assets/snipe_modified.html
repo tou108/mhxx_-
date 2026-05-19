@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MHXX 護石スナイプ統合ツール 拡張版</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -603,6 +603,105 @@ body.light-mode .app-header {
 .ocr-progress-fill { height:100%; background:linear-gradient(90deg,var(--teal),#40ffb8); border-radius:2px; transition:width 0.3s; }
 .region-debug { font-size:9px; color:var(--text3); font-family:monospace; margin-top:4px; padding:4px 8px; background:var(--panel); border-radius:3px; }
 .region-debug span { display:inline-block; margin-right:8px; }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  :root { --header-h: 44px; }
+  body { font-size: 12px; }
+
+  /* Header */
+  .app-header { padding: 0 10px; gap: 6px; height: var(--header-h); }
+  .app-header h1 { font-size: 1rem; letter-spacing: 1px; }
+  .app-header .sub { display: none; }
+  .version-badge { font-size: 8px; padding: 2px 4px; }
+  .mode-toggle { padding: 4px 8px; font-size: 10px; }
+
+  /* Tabs */
+  .main-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .main-tabs::-webkit-scrollbar { display: none; }
+  .main-tab { padding: 8px 12px; font-size: 11px; flex-shrink: 0; }
+
+  /* 3-column → stack vertically */
+  .main-layout { flex-direction: column; min-height: auto; }
+  .search-col {
+    width: 100% !important; min-width: unset !important;
+    border-right: none; border-bottom: 1px solid var(--border);
+    max-height: 55vh; overflow-y: auto;
+  }
+  .results-col { width: 100%; overflow: visible; }
+  .timer-col {
+    width: 100% !important; min-width: unset !important;
+    border-left: none; border-top: 1px solid var(--border);
+  }
+
+  /* Forms */
+  .search-form { padding: 10px; }
+  .form-row { margin-bottom: 8px; }
+  select, input[type="number"], input[type="text"], textarea {
+    padding: 7px 8px; font-size: 13px;
+  }
+  .form-inline { flex-wrap: wrap; }
+  .input-wide { width: 110px !important; }
+  .pts-input  { width: 55px !important; }
+
+  /* Buttons */
+  .search-btn { padding: 11px; font-size: 13px; }
+  .origin-btn { padding: 8px 4px; font-size: 11px; }
+  .kind-tab   { padding: 8px 2px; font-size: 10px; }
+
+  /* Results table */
+  .results-header { padding: 6px 10px; gap: 8px; font-size: 10px; }
+  table { font-size: 11px; }
+  th { padding: 6px 6px; font-size: 9px; }
+  td { padding: 6px 6px; }
+
+  /* Auto-snipe 2-column → 1-column */
+  #tab-autosnipe > div { flex-direction: column !important; min-height: auto !important; }
+  #tab-autosnipe > div > div:first-child {
+    width: 100% !important; min-width: unset !important;
+    border-right: none !important; border-bottom: 1px solid var(--border);
+  }
+
+  /* TCP tab */
+  #tab-tcp { max-width: 100% !important; padding: 14px !important; }
+
+  /* DVR tab */
+  #tab-dvr { padding: 14px !important; }
+
+  /* Section titles */
+  .sec-title { padding: 8px 10px; font-size: 10px; }
+
+  /* Status bar */
+  #tcpStatusBar { padding: 4px 10px; font-size: 10px; }
+}
+
+/* DVR タブ スタイル */
+.dvr-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden; margin-bottom: 12px;
+}
+.dvr-panel-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.dvr-status-dot {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--red);
+  box-shadow: 0 0 6px rgba(220,53,69,0.5); flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.dvr-status-dot.active {
+  background: var(--teal); box-shadow: 0 0 8px rgba(32,201,151,0.7);
+}
+.dvr-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dvr-ip-input {
+  flex: 1; min-width: 140px; background: var(--panel2); border: 1px solid var(--border2);
+  color: var(--text); border-radius: 4px; padding: 8px 10px;
+  font-size: 13px; font-family: var(--font);
+}
+.dvr-ip-input:focus { outline: none; border-color: var(--teal); }
+.dvr-note {
+  font-size: 10px; color: var(--text3); line-height: 1.6;
+  background: var(--panel2); border-radius: 4px; padding: 8px 10px;
+  border-left: 3px solid var(--teal);
+}
 </style>
 </head>
 <body>
@@ -616,7 +715,17 @@ body.light-mode .app-header {
 
 <!-- MAIN TABS -->
 <div class="main-tabs">
-  <div class="main-tab active" data-tab="search" onclick="switchTab('search')">🔍 護石サーチ</div>
+  <div class="main-tab active" data-tab="search"   onclick="switchTab('search')">🔍 護石サーチ</div>
+  <div class="main-tab"       data-tab="tcp"       onclick="switchTab('tcp')">🔌 Switch接続</div>
+  <div class="main-tab"       data-tab="autosnipe" onclick="switchTab('autosnipe')">🤖 自動スナイプ</div>
+  <div class="main-tab"       data-tab="dvr"       onclick="switchTab('dvr')">📺 Switch映像</div>
+</div>
+
+<!-- TCP接続ステータスピル (常時表示) -->
+<div id="tcpStatusBar" style="background:#0e0f11;border-bottom:1px solid #2c2e38;padding:4px 16px;display:flex;align-items:center;gap:10px;font-size:11px;">
+  <span id="tcpDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc3545;flex-shrink:0;"></span>
+  <span id="tcpStatusText" style="color:#808898;">Switch CFW 未接続</span>
+  <span id="tcpScreenOnBadge" style="display:none;background:#20c997;color:#000;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:auto;">📺 画面ON</span>
 </div>
 
 <!-- =================== TAB: SEARCH =================== -->
@@ -2785,9 +2894,14 @@ function ctrlDur() { return parseInt(document.getElementById('ctrlHoldDur').valu
 
 function pressCtrlBtn(btn) {
   const dur = ctrlDur();
-  _parentAb('pressButton', btn, dur);
-  // Also send via postMessage for cross-origin parents
-  try { window.parent.postMessage({ type: 'pressButton', button: btn, duration: dur }, '*'); } catch(e) {}
+  // TCP経由 (sys-botbase)
+  const bridge = ab();
+  if (bridge && bridge.isConnected && bridge.isConnected()) {
+    bridge.click(btn);
+  } else {
+    _parentAb('pressButton', btn, dur);
+    try { window.parent.postMessage({ type: 'pressButton', button: btn, duration: dur }, '*'); } catch(e) {}
+  }
   const el = document.getElementById('cbtn-' + btn);
   if (el) { el.classList.add('pressed'); setTimeout(() => el.classList.remove('pressed'), dur + 60); }
   macroRecordStep({ type: 'press', button: btn, duration: dur });
@@ -2797,12 +2911,18 @@ function pressCtrlBtn(btn) {
 function tiltStick(side, x, y) {
   const sid = side.toLowerCase();
   const dur = parseInt(document.getElementById(sid + 'stick-dur').value) || 500;
-  _parentAb('tiltStick', side, x, y, dur);
-  try { window.parent.postMessage({ type: 'tiltStick', side: side, x: x, y: y, duration: dur }, '*'); } catch(e) {}
+  // TCP経由
+  const bridge = ab();
+  if (bridge && bridge.isConnected && bridge.isConnected()) {
+    bridge.setStick(side, Math.round(x * 100), Math.round(y * 100));
+    setTimeout(() => bridge.resetStick(side), dur);
+  } else {
+    _parentAb('tiltStick', side, x, y, dur);
+    try { window.parent.postMessage({ type: 'tiltStick', side: side, x: x, y: y, duration: dur }, '*'); } catch(e) {}
+  }
   document.getElementById(sid + 'stick-x').value = Math.round(x * 100);
   document.getElementById(sid + 'stick-y').value = Math.round(y * 100);
   updateStickDisplay(side);
-  // Flash visual joystick
   if (_vjoy[side]) {
     _vjoy[side].draw(x, y);
     setTimeout(function() { if (_vjoy[side]) _vjoy[side].draw(0, 0); }, dur);
@@ -3476,7 +3596,882 @@ window.onload = function() {
   // Init visual joysticks
   initJoyCanvas('L');
   initJoyCanvas('R');
+  // TCP init
+  initTcpTab();
 };
+
+// =====================================================================
+// SysBotBridge グローバルラッパー (TCP接続ステータス & ユーティリティ)
+// =====================================================================
+function ab() { return window.AndroidBridge || null; }
+
+function onSysBotStatus(s) {
+  const dot  = document.getElementById('tcpDot');
+  const dot2 = document.getElementById('tcpDot2');
+  const txt  = document.getElementById('tcpStatusText');
+  const txt2 = document.getElementById('tcpStatusText2');
+  const cBtn = document.getElementById('tcpConnectBtn');
+  const dBtn = document.getElementById('tcpDisconnectBtn');
+  const col  = s.connected ? '#28a745' : '#dc3545';
+  const msg  = s.connected ? '✅ ' + s.message : '⛔ ' + s.message;
+  if (dot)  dot.style.background  = col;
+  if (dot2) dot2.style.background = col;
+  if (txt)  { txt.textContent  = msg; txt.style.color  = col; }
+  if (txt2) { txt2.textContent = msg; txt2.style.color = col; }
+  if (cBtn) cBtn.style.display = s.connected ? 'none' : '';
+  if (dBtn) dBtn.style.display = s.connected ? ''     : 'none';
+  const runBtn = document.getElementById('autoRunBtn');
+  if (runBtn) runBtn.disabled = !s.connected;
+  if (typeof showToast === 'function') showToast(msg);
+}
+
+// =====================================================================
+// TCP接続タブ
+// =====================================================================
+function initTcpTab() {
+  // localStorage に保存したIP/Portを復元
+  const savedIp   = localStorage.getItem('sysBotIp')   || '192.168.0.';
+  const savedPort = localStorage.getItem('sysBotPort')  || '6000';
+  const ipEl   = document.getElementById('tcpIpInput');
+  const portEl = document.getElementById('tcpPortInput');
+  if (ipEl)   ipEl.value   = savedIp;
+  if (portEl) portEl.value = savedPort;
+}
+
+function tcpConnect() {
+  const ip   = document.getElementById('tcpIpInput').value.trim();
+  const port = parseInt(document.getElementById('tcpPortInput').value) || 6000;
+  if (!ip) { showToast('⚠ IPアドレスを入力してください'); return; }
+  localStorage.setItem('sysBotIp',   ip);
+  localStorage.setItem('sysBotPort', String(port));
+  const dot = document.getElementById('tcpDot');
+  if (dot) { dot.style.background = '#e0a800'; }
+  document.getElementById('tcpStatusText').textContent = '⏳ 接続中…';
+  document.getElementById('tcpStatusText').style.color = '#e0a800';
+  const bridge = ab();
+  if (bridge) {
+    bridge.connectSwitch(ip, port);
+  } else {
+    // ブラウザプレビュー用モック
+    setTimeout(() => onSysBotStatus({ connected: true, message: ip + ':' + port + ' (MOCK)' }), 800);
+  }
+}
+
+function tcpDisconnect() {
+  const bridge = ab();
+  if (bridge) bridge.disconnectSwitch();
+  else onSysBotStatus({ connected: false, message: '切断' });
+}
+
+function tcpSendRaw() {
+  const cmd = document.getElementById('tcpRawCmd').value.trim();
+  if (!cmd) return;
+  const bridge = ab();
+  if (bridge) {
+    bridge.sendRaw(cmd);
+    showToast('📤 送信: ' + cmd);
+  } else {
+    showToast('⚠ 未接続');
+  }
+}
+
+function tcpToggleScreenOn() {
+  const btn   = document.getElementById('tcpScreenOnBtn');
+  const badge = document.getElementById('tcpScreenOnBadge');
+  const on    = btn.dataset.on !== 'true';
+  btn.dataset.on   = on ? 'true' : 'false';
+  btn.textContent  = on ? '📺 画面常時ON (解除)' : '📺 画面常時ON';
+  btn.style.background = on ? 'linear-gradient(135deg,#1a7a5a,#20c997)' : '';
+  btn.style.color  = on ? '#000' : '';
+  if (badge) badge.style.display = on ? '' : 'none';
+  const bridge = ab();
+  if (bridge) bridge.setKeepScreenOn(on);
+  showToast(on ? '📺 画面常時ON' : '📺 画面常時ONを解除');
+}
+
+// =====================================================================
+// 自動スナイプ コア
+// =====================================================================
+var autoSnipeRunning  = false;
+var autoSnipeAborted  = false;
+var autoLoopCount     = 0;
+var autoHitCount      = 0;
+
+function autoLog(msg, cls) {
+  const log = document.getElementById('autoLog');
+  if (!log) return;
+  const d = document.createElement('div');
+  d.className = 'auto-log-entry' + (cls ? ' ' + cls : '');
+  const ts = new Date().toLocaleTimeString('ja-JP');
+  d.innerHTML = '<span style="color:var(--text3)">[' + ts + ']</span> ' + msg;
+  log.prepend(d);
+  if (log.children.length > 200) log.removeChild(log.lastChild);
+}
+
+function autoUpdateCounter() {
+  const lc = document.getElementById('autoLoopCount');
+  const hc = document.getElementById('autoHitCount');
+  if (lc) lc.textContent = autoLoopCount;
+  if (hc) hc.textContent = autoHitCount;
+}
+
+function autoStop() {
+  autoSnipeAborted = true;
+  autoSnipeRunning = false;
+  document.getElementById('autoRunBtn').disabled  = false;
+  document.getElementById('autoStopBtn').disabled = true;
+  const bridge = ab();
+  if (bridge) bridge.resetStick('LEFT');
+  autoLog('🛑 自動スナイプを停止しました', 'log-warn');
+}
+
+// 指定msだけ待つ (abort対応)
+function autoSleep(ms) {
+  return new Promise(res => {
+    if (autoSnipeAborted) { res(); return; }
+    setTimeout(res, ms);
+  });
+}
+
+// ボタン押し (bridge経由)
+function autoPressBtn(btn, times, intervalMs) {
+  times     = times     || 1;
+  intervalMs = intervalMs || 100;
+  return new Promise(async res => {
+    const bridge = ab();
+    for (let i = 0; i < times; i++) {
+      if (autoSnipeAborted) break;
+      if (bridge) bridge.click(btn);
+      else autoLog('[MOCK] click ' + btn, 'log-dim');
+      if (i < times - 1) await autoSleep(intervalMs);
+    }
+    res();
+  });
+}
+
+// =====================================================================
+// プリセット: マカ錬金リセット周回
+// =====================================================================
+async function runMakaReset() {
+  if (!autoSnipeRunning) return;
+  const cfg = {
+    wait1:    parseInt(document.getElementById('makaWait1').value)    || 2000,
+    wait2:    parseInt(document.getElementById('makaWait2').value)    || 1500,
+    resetWait:parseInt(document.getElementById('makaResetWait').value)|| 8000,
+  };
+  autoLoopCount++;
+  autoUpdateCounter();
+  autoLog('▶ ループ ' + autoLoopCount + ' 開始: マカ錬金リセット周回');
+
+  const bridge = ab();
+  // 1. 錬金結果画面をAで確認
+  autoLog('  → 錬金結果確認 (A連打)');
+  for (let i = 0; i < 8; i++) {
+    if (autoSnipeAborted) return;
+    if (bridge) bridge.click('A');
+    await autoSleep(cfg.wait1 / 8);
+  }
+  await autoSleep(cfg.wait1);
+  if (autoSnipeAborted) return;
+
+  // 2. OCRで護石を判定
+  autoLog('  → OCR判定中…');
+  const ocrResult = await triggerOcrAndCheck();
+  autoLog('  → OCR結果: ' + (ocrResult.matched ? '✅ ヒット! ' + ocrResult.desc : '❌ ミス ' + ocrResult.desc));
+
+  if (ocrResult.matched) {
+    autoHitCount++;
+    autoUpdateCounter();
+    autoLog('🎯 【ヒット!】' + ocrResult.desc, 'log-hit');
+    // アラート
+    if (bridge) {
+      bridge.vibratePattern('[0,200,100,200,100,400]');
+      bridge.showNotification('🎯 お守りヒット!', ocrResult.desc);
+    }
+    autoStop();
+    return;
+  }
+
+  // 3. リセット: HOMEボタン → ゲーム終了 → 再起動
+  await autoSleep(cfg.wait2);
+  if (autoSnipeAborted) return;
+  autoLog('  → HOMEボタン押下');
+  if (bridge) bridge.press('HOME');
+  await autoSleep(500);
+  if (bridge) bridge.release('HOME');
+  await autoSleep(1200);
+  // ゲーム選択してXで閉じる
+  if (bridge) bridge.click('X');
+  await autoSleep(800);
+  if (bridge) bridge.click('A'); // 「終了する」確認
+  await autoSleep(2000);
+  // ゲームアイコン選択 → 起動
+  if (bridge) bridge.click('A');
+  await autoSleep(cfg.resetWait);
+  if (autoSnipeAborted) return;
+  autoLog('  → 再起動完了、次ループへ');
+}
+
+// =====================================================================
+// プリセット: 炭鉱採掘周回
+// =====================================================================
+async function runMiningLoop() {
+  if (!autoSnipeRunning) return;
+  const cfg = {
+    dashMs:   parseInt(document.getElementById('minesDashMs').value)   || 3000,
+    mineCount:parseInt(document.getElementById('minesMineCount').value)|| 6,
+    returnMs: parseInt(document.getElementById('minesReturnMs').value) || 3500,
+  };
+  autoLoopCount++;
+  autoUpdateCounter();
+  autoLog('▶ ループ ' + autoLoopCount + ' 開始: 炭鉱採掘周回');
+
+  const bridge = ab();
+  // 1. ダッシュ移動（左スティック上＋Bダッシュ）
+  autoLog('  → 採掘ポイントへダッシュ中…');
+  if (bridge) { bridge.setStick('LEFT', 0, -80); bridge.press('B'); }
+  await autoSleep(cfg.dashMs);
+  if (autoSnipeAborted) { if (bridge) { bridge.resetStick('LEFT'); bridge.release('B'); } return; }
+  if (bridge) { bridge.resetStick('LEFT'); bridge.release('B'); }
+  await autoSleep(300);
+
+  // 2. 採掘アクション
+  autoLog('  → 採掘中 x' + cfg.mineCount);
+  for (let i = 0; i < cfg.mineCount; i++) {
+    if (autoSnipeAborted) return;
+    if (bridge) bridge.click('A');
+    await autoSleep(1800);
+    if (autoSnipeAborted) return;
+    if (bridge) bridge.click('A');
+    await autoSleep(200);
+  }
+
+  await autoSleep(500);
+  if (autoSnipeAborted) return;
+
+  // 3. キャンプへ戻る（左スティック下＋ダッシュ）
+  autoLog('  → キャンプへ帰還中…');
+  if (bridge) { bridge.setStick('LEFT', 0, 80); bridge.press('B'); }
+  await autoSleep(cfg.returnMs);
+  if (bridge) { bridge.resetStick('LEFT'); bridge.release('B'); }
+  await autoSleep(500);
+  if (autoSnipeAborted) return;
+
+  // 4. キャンプBOX → お守り確認
+  autoLog('  → アイテムBOX確認');
+  if (bridge) bridge.click('PLUS');
+  await autoSleep(1000);
+
+  const ocrResult = await triggerOcrAndCheck();
+  autoLog('  → OCR結果: ' + (ocrResult.matched ? '✅ ヒット! ' + ocrResult.desc : '❌ ミス ' + ocrResult.desc));
+
+  if (ocrResult.matched) {
+    autoHitCount++;
+    autoUpdateCounter();
+    autoLog('🎯 【ヒット!】' + ocrResult.desc, 'log-hit');
+    if (bridge) {
+      bridge.vibratePattern('[0,200,100,200,100,400]');
+      bridge.showNotification('🎯 お守りヒット!', ocrResult.desc);
+    }
+    autoStop();
+    return;
+  }
+  if (bridge) bridge.click('B'); // BOX閉じる
+  await autoSleep(500);
+}
+
+// =====================================================================
+// プリセット: マクロ連続再生
+// =====================================================================
+async function runMacroLoop() {
+  if (!autoSnipeRunning) return;
+  const macroIdx = parseInt(document.getElementById('macroLoopSelect').value);
+  if (isNaN(macroIdx) || macroIdx < 0 || !savedMacros[macroIdx]) {
+    autoLog('⚠ マクロが選択されていません', 'log-warn');
+    return;
+  }
+  const macro = savedMacros[macroIdx];
+  autoLoopCount++;
+  autoUpdateCounter();
+  autoLog('▶ ループ ' + autoLoopCount + ': マクロ「' + (macro.name || '無名') + '」再生');
+  await playMacroStepsAsync(macro.steps);
+}
+
+// マクロステップ非同期再生 (abort対応)
+async function playMacroStepsAsync(steps) {
+  const bridge = ab();
+  for (const step of steps) {
+    if (autoSnipeAborted) return;
+    const dur = step.duration || 100;
+    if (step.type === 'press') {
+      if (bridge) bridge.click(step.button);
+      await autoSleep(dur + 50);
+    } else if (step.type === 'multipress') {
+      // 同時押し
+      for (const b of (step.buttons || [])) if (bridge) bridge.press(b);
+      await autoSleep(dur);
+      for (const b of (step.buttons || [])) if (bridge) bridge.release(b);
+      await autoSleep(50);
+    } else if (step.type === 'stick') {
+      if (bridge) bridge.setStick(step.side, Math.round(step.x*100), Math.round(step.y*100));
+      await autoSleep(dur);
+      if (bridge) bridge.resetStick(step.side);
+      await autoSleep(50);
+    } else if (step.type === 'wait') {
+      await autoSleep(dur);
+    }
+  }
+}
+
+// =====================================================================
+// OCR連動チェック
+// =====================================================================
+function triggerOcrAndCheck() {
+  return new Promise(resolve => {
+    // OCR機能が有効でない場合はスキップ
+    const useOcr = document.getElementById('autoUseOcr') && document.getElementById('autoUseOcr').checked;
+    if (!useOcr) { resolve({ matched: false, desc: '(OCRスキップ)' }); return; }
+
+    const targetSkill = (document.getElementById('autoTargetSkill').value || '').trim();
+    const targetPts   = parseInt(document.getElementById('autoTargetPts').value) || 1;
+
+    // OCR結果コールバックを一時的に上書き
+    const origCallback = window._autoOcrCallback;
+    window._autoOcrCallback = function(text) {
+      window._autoOcrCallback = origCallback;
+      const lines = text.split(/\n/);
+      let matched = false, desc = text.substring(0, 60);
+      if (targetSkill) {
+        for (const line of lines) {
+          if (line.includes(targetSkill)) {
+            const m = line.match(/(\d+)/);
+            if (m && parseInt(m[1]) >= targetPts) { matched = true; desc = line.trim(); break; }
+          }
+        }
+      }
+      resolve({ matched, desc });
+    };
+
+    // スクリーンショットを取ってOCR (既存フロー利用)
+    if (typeof captureAndOcr === 'function') {
+      captureAndOcr();
+    } else {
+      // OCR機能なし → スキップ
+      window._autoOcrCallback = origCallback;
+      resolve({ matched: false, desc: '(OCR未対応)' });
+    }
+
+    // タイムアウト 10秒
+    setTimeout(() => {
+      if (window._autoOcrCallback !== origCallback) {
+        window._autoOcrCallback = origCallback;
+        resolve({ matched: false, desc: '(OCRタイムアウト)' });
+      }
+    }, 10000);
+  });
+}
+
+// OCR結果ハンドラをフック（既存 receiveMlKitResult と共存）
+(function() {
+  const orig = window.receiveMlKitResult;
+  window.receiveMlKitResult = function(jsonStr) {
+    if (typeof orig === 'function') orig(jsonStr);
+    try {
+      const obj = JSON.parse(jsonStr);
+      if (obj.text && typeof window._autoOcrCallback === 'function') {
+        window._autoOcrCallback(obj.text);
+      }
+    } catch(e) {}
+  };
+})();
+
+// =====================================================================
+// 自動スナイプ メインループ
+// =====================================================================
+async function startAutoSnipe() {
+  if (autoSnipeRunning) return;
+  const mode = document.querySelector('input[name="autoMode"]:checked').value;
+  const maxLoops = parseInt(document.getElementById('autoMaxLoops').value) || 9999;
+
+  autoSnipeRunning = true;
+  autoSnipeAborted = false;
+  autoLoopCount    = 0;
+  autoHitCount     = 0;
+  autoUpdateCounter();
+
+  document.getElementById('autoRunBtn').disabled  = true;
+  document.getElementById('autoStopBtn').disabled = false;
+
+  // 画面常時ON
+  const bridge = ab();
+  if (bridge) { bridge.setKeepScreenOn(true); bridge.attachController(); }
+
+  autoLog('🚀 自動スナイプ開始: モード=' + mode + ', 最大=' + maxLoops + 'ループ', 'log-ok');
+
+  // 初期待機
+  const initWait = parseInt(document.getElementById('autoInitWait').value) || 0;
+  if (initWait > 0) {
+    autoLog('⏳ 初期待機 ' + initWait + 's…');
+    await autoSleep(initWait * 1000);
+  }
+
+  while (autoSnipeRunning && !autoSnipeAborted && autoLoopCount < maxLoops) {
+    try {
+      if (mode === 'maka')   await runMakaReset();
+      else if (mode === 'mine')  await runMiningLoop();
+      else if (mode === 'macro') await runMacroLoop();
+      // ループ間インターバル
+      const loopInterval = parseInt(document.getElementById('autoLoopInterval').value) || 500;
+      await autoSleep(loopInterval);
+    } catch(e) {
+      autoLog('⚠ エラー: ' + e.message, 'log-warn');
+      await autoSleep(2000);
+    }
+  }
+
+  if (!autoSnipeAborted) {
+    autoLog('✅ 最大ループ数に達しました (' + maxLoops + '回)', 'log-ok');
+  }
+  autoSnipeRunning = false;
+  document.getElementById('autoRunBtn').disabled  = false;
+  document.getElementById('autoStopBtn').disabled = true;
+  if (bridge) { bridge.setKeepScreenOn(false); bridge.detachController(); }
+}
+
+// マクロリストをドロップダウンに同期
+function syncMacroLoopSelect() {
+  const sel = document.getElementById('macroLoopSelect');
+  if (!sel) return;
+  sel.innerHTML = savedMacros.length === 0
+    ? '<option value="-1">（保存済みマクロなし）</option>'
+    : savedMacros.map((m,i) => `<option value="${i}">${m.name || '無名マクロ'+i}</option>`).join('');
+}
 </script>
+
+<!-- =================== TAB: TCP接続 =================== -->
+<div class="tab-page" id="tab-tcp" style="flex-direction:column;padding:20px;max-width:640px;margin:0 auto;width:100%;gap:16px;">
+
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+    <div class="sec-title teal"><span class="dot"></span>Switch CFW TCP接続 (sys-botbase)</div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+
+      <div style="background:rgba(32,201,151,0.06);border:1px solid rgba(32,201,151,0.2);border-radius:4px;padding:10px 12px;font-size:11px;color:var(--text2);line-height:1.7;">
+        <strong style="color:var(--teal);">前提条件</strong><br>
+        ① Switchに <strong>Atmosphere CFW</strong> を導入済み<br>
+        ② SysModules に <strong>sys-botbase</strong> をインストール済み<br>
+        ③ Switch と Android端末が同じ Wi-Fi に接続されている<br>
+        ④ SwitchのIPアドレスを確認: 設定 → インターネット → IPアドレス
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <div style="flex:1;">
+          <label class="form-label">Switch IPアドレス</label>
+          <input type="text" id="tcpIpInput" placeholder="192.168.0.10" style="width:100%;">
+        </div>
+        <div style="width:90px;">
+          <label class="form-label">ポート</label>
+          <input type="number" id="tcpPortInput" value="6000" min="1" max="65535" style="width:100%;">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button id="tcpConnectBtn" class="search-btn teal-btn" onclick="tcpConnect()" style="flex:1;">🔌 接続</button>
+        <button id="tcpDisconnectBtn" class="search-btn" onclick="tcpDisconnect()" style="flex:1;display:none;">✂ 切断</button>
+      </div>
+
+      <div style="padding:10px 12px;background:var(--panel2);border-radius:4px;border:1px solid var(--border);font-size:12px;display:flex;align-items:center;gap:10px;">
+        <span id="tcpDot2" style="width:10px;height:10px;border-radius:50%;background:#dc3545;flex-shrink:0;display:inline-block;"></span>
+        <span id="tcpStatusText2" style="color:#808898;">未接続</span>
+      </div>
+
+      <button id="tcpScreenOnBtn" class="search-btn" onclick="tcpToggleScreenOn()" style="font-size:11px;" data-on="false">📺 画面常時ON（スナイプ中に画面を落とさない）</button>
+    </div>
+  </div>
+
+  <!-- クイックテスト -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+    <div class="sec-title"><span class="dot"></span>クイック操作テスト</div>
+    <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('A')">A</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('B')">B</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('X')">X</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('Y')">Y</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('PLUS')">PLUS</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('MINUS')">MINUS</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('HOME')">HOME</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('DUP')">↑</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('DDOWN')">↓</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('DLEFT')">←</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('DRIGHT')">→</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('L')">L</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('R')">R</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('ZL')">ZL</button>
+        <button class="ctrl-btn" style="width:auto;padding:6px 14px;" onclick="ab()&&ab().click('ZR')">ZR</button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="tcpRawCmd" placeholder="生コマンド例: click A / setStick LEFT 0x4000 0x4000" style="flex:1;font-family:monospace;font-size:11px;">
+        <button class="search-btn" style="width:80px;font-size:11px;" onclick="tcpSendRaw()">送信</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- sys-botbaseコマンド一覧 -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+    <div class="sec-title"><span class="dot"></span>sys-botbase コマンド一覧</div>
+    <div style="padding:12px;font-size:11px;color:var(--text2);line-height:1.9;font-family:monospace;">
+      <div><span style="color:var(--teal);">click A</span> — ボタン1回押し</div>
+      <div><span style="color:var(--teal);">clickCount A 5</span> — 5回連打</div>
+      <div><span style="color:var(--teal);">press A / release A</span> — ホールド開始/終了</div>
+      <div><span style="color:var(--teal);">setStick LEFT 0x4000 0x0000</span> — スティック (0x4000=中立, 0x0=最小, 0x7FFF=最大)</div>
+      <div><span style="color:var(--teal);">attachController / detachController</span> — コントローラー接続/切断</div>
+      <div style="margin-top:6px;color:var(--text3);">ボタン名: A B X Y L R ZL ZR PLUS MINUS HOME CAPTURE DLEFT DRIGHT DUP DDOWN LCLICK RCLICK</div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== TAB: 自動スナイプ =================== -->
+<div class="tab-page" id="tab-autosnipe" style="flex-direction:column;padding:0;">
+<style>
+.auto-panel { background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px; }
+.auto-panel-body { padding:14px;display:flex;flex-direction:column;gap:10px; }
+.auto-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+.auto-label { font-size:10px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;display:block; }
+.auto-log-entry { padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;color:var(--text2); }
+.auto-log-entry.log-ok   { color:var(--teal); }
+.auto-log-entry.log-warn { color:var(--yellow); }
+.auto-log-entry.log-hit  { color:#ffdd44;font-weight:700;font-size:13px; }
+.auto-log-entry.log-dim  { color:var(--text3); }
+.auto-mode-card { border:1px solid var(--border2);border-radius:4px;padding:10px;cursor:pointer;transition:border-color 0.15s; }
+.auto-mode-card:has(input:checked) { border-color:var(--teal);background:rgba(32,201,151,0.05); }
+.auto-mode-card label { cursor:pointer;display:flex;gap:8px;align-items:flex-start; }
+.auto-mode-card label input { margin-top:2px;flex-shrink:0; }
+.auto-stat-box { background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:8px 12px;text-align:center;flex:1; }
+.auto-stat-box .val { font-size:22px;font-weight:700;color:var(--steel2);font-family:var(--font-en); }
+.auto-stat-box .lbl { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px; }
+</style>
+
+<div style="display:flex;flex-direction:row;gap:0;min-height:calc(100vh - 120px);">
+
+<!-- 左カラム: 設定 -->
+<div style="width:360px;min-width:280px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:14px;">
+
+  <!-- モード選択 -->
+  <div class="auto-panel">
+    <div class="sec-title teal"><span class="dot"></span>自動周回モード</div>
+    <div class="auto-panel-body">
+      <div class="auto-mode-card">
+        <label><input type="radio" name="autoMode" value="maka" checked>
+          <div><strong style="color:var(--teal);">🔮 マカ錬金リセット周回</strong><br>
+          <span style="font-size:10px;color:var(--text2);">錬金結果→OCR判定→NG時HOMEリセット再起動</span></div>
+        </label>
+      </div>
+      <div class="auto-mode-card">
+        <label><input type="radio" name="autoMode" value="mine">
+          <div><strong style="color:#c0c040;">⛏ 炭鉱採掘周回</strong><br>
+          <span style="font-size:10px;color:var(--text2);">フィールドダッシュ→採掘→キャンプBOX確認→繰返し</span></div>
+        </label>
+      </div>
+      <div class="auto-mode-card">
+        <label><input type="radio" name="autoMode" value="macro">
+          <div><strong style="color:var(--purple2);">📼 保存マクロ連続再生</strong><br>
+          <span style="font-size:10px;color:var(--text2);">コントローラータブで記録したマクロをループ再生</span></div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 基本設定 -->
+  <div class="auto-panel">
+    <div class="sec-title"><span class="dot"></span>基本設定</div>
+    <div class="auto-panel-body">
+      <div>
+        <label class="auto-label">最大ループ回数</label>
+        <input type="number" id="autoMaxLoops" value="9999" min="1" max="99999" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">初期待機時間 (秒) ※タイマーに合わせる</label>
+        <input type="number" id="autoInitWait" value="0" min="0" max="3600" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">ループ間インターバル (ms)</label>
+        <input type="number" id="autoLoopInterval" value="500" min="0" max="10000" style="width:100%;">
+      </div>
+    </div>
+  </div>
+
+  <!-- OCR連動設定 -->
+  <div class="auto-panel">
+    <div class="sec-title purple"><span class="dot"></span>OCR連動判定設定</div>
+    <div class="auto-panel-body">
+      <label style="display:flex;gap:8px;align-items:center;font-size:12px;cursor:pointer;">
+        <input type="checkbox" id="autoUseOcr">
+        OCR自動判定を有効にする（ML Kit必須）
+      </label>
+      <div>
+        <label class="auto-label">目標スキル名</label>
+        <input type="text" id="autoTargetSkill" placeholder="例: 攻撃" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">最低ポイント</label>
+        <input type="number" id="autoTargetPts" value="5" min="1" max="20" style="width:100%;">
+      </div>
+      <div style="font-size:10px;color:var(--text3);line-height:1.6;">
+        ✔ OCR有効時: 画面を読み取って指定スキルが目標以上ならヒット→停止・通知<br>
+        ✗ OCR無効時: ループカウントのみ（手動確認モード）
+      </div>
+    </div>
+  </div>
+
+  <!-- マカ錬金専用設定 -->
+  <div class="auto-panel">
+    <div class="sec-title"><span class="dot"></span>マカ錬金リセット設定</div>
+    <div class="auto-panel-body">
+      <div>
+        <label class="auto-label">結果確認待機 (ms)</label>
+        <input type="number" id="makaWait1" value="2000" min="500" max="10000" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">リセット前待機 (ms)</label>
+        <input type="number" id="makaWait2" value="1500" min="300" max="5000" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">再起動後の待機 (ms)</label>
+        <input type="number" id="makaResetWait" value="8000" min="3000" max="30000" style="width:100%;">
+      </div>
+    </div>
+  </div>
+
+  <!-- 炭鉱採掘専用設定 -->
+  <div class="auto-panel">
+    <div class="sec-title"><span class="dot"></span>炭鉱採掘設定</div>
+    <div class="auto-panel-body">
+      <div>
+        <label class="auto-label">採掘ポイントまでのダッシュ時間 (ms)</label>
+        <input type="number" id="minesDashMs" value="3000" min="500" max="15000" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">採掘回数</label>
+        <input type="number" id="minesMineCount" value="6" min="1" max="20" style="width:100%;">
+      </div>
+      <div>
+        <label class="auto-label">帰還ダッシュ時間 (ms)</label>
+        <input type="number" id="minesReturnMs" value="3500" min="500" max="15000" style="width:100%;">
+      </div>
+    </div>
+  </div>
+
+  <!-- マクロ周回設定 -->
+  <div class="auto-panel">
+    <div class="sec-title purple"><span class="dot"></span>マクロ周回設定</div>
+    <div class="auto-panel-body">
+      <div>
+        <label class="auto-label">使用するマクロ</label>
+        <select id="macroLoopSelect" style="width:100%;" onclick="syncMacroLoopSelect()">
+          <option value="-1">（コントローラータブでマクロを記録してください）</option>
+        </select>
+      </div>
+      <button class="search-btn" style="font-size:11px;" onclick="syncMacroLoopSelect()">🔄 マクロリスト更新</button>
+    </div>
+  </div>
+
+</div><!-- /左カラム -->
+
+<!-- 右カラム: 実行 & ログ -->
+<div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;">
+
+  <!-- 統計 -->
+  <div style="display:flex;gap:10px;">
+    <div class="auto-stat-box">
+      <div class="val" id="autoLoopCount">0</div>
+      <div class="lbl">ループ回数</div>
+    </div>
+    <div class="auto-stat-box" style="border-color:var(--teal);">
+      <div class="val" id="autoHitCount" style="color:var(--teal);">0</div>
+      <div class="lbl">ヒット回数</div>
+    </div>
+  </div>
+
+  <!-- 実行ボタン -->
+  <div style="display:flex;gap:8px;">
+    <button id="autoRunBtn" class="search-btn teal-btn" onclick="startAutoSnipe()" style="flex:1;font-size:14px;padding:12px;">
+      ▶ 自動スナイプ開始
+    </button>
+    <button id="autoStopBtn" class="search-btn orange-btn" onclick="autoStop()" disabled style="width:120px;font-size:13px;">
+      ⏹ 停止
+    </button>
+  </div>
+
+  <div style="font-size:10px;color:var(--text3);line-height:1.6;background:rgba(220,53,69,0.06);border:1px solid rgba(220,53,69,0.2);border-radius:4px;padding:8px 12px;">
+    ⚠ <strong>注意:</strong> 自動操作中はSwitchとAndroidを放置してください。<br>
+    自動停止: ヒット検出・最大ループ到達・エラー時。手動停止は「停止」ボタン。<br>
+    TCP接続が必要です。未接続の場合は「Switch接続」タブから接続してください。
+  </div>
+
+  <!-- ログ -->
+  <div class="auto-panel" style="flex:1;margin-bottom:0;">
+    <div class="sec-title" style="justify-content:space-between;">
+      <span><span class="dot"></span>実行ログ</span>
+      <button onclick="document.getElementById('autoLog').innerHTML=''" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;">クリア</button>
+    </div>
+    <div id="autoLog" style="padding:8px 12px;max-height:400px;overflow-y:auto;font-family:monospace;">
+      <div class="auto-log-entry log-dim">— ログはここに表示されます —</div>
+    </div>
+  </div>
+
+  <!-- MHXX便利情報 -->
+  <div class="auto-panel">
+    <div class="sec-title"><span class="dot"></span>MHXXお守りスナイプ Tips（APK限定機能）</div>
+    <div style="padding:12px;font-size:11px;color:var(--text2);line-height:1.8;">
+      <div>📱 <strong>画面常時ON</strong>: Switch接続タブで有効化 → 長時間周回でも画面OFF防止</div>
+      <div>📳 <strong>バイブ通知</strong>: ヒット時に強いバイブレーション → 放置中でも即気づき</div>
+      <div>🔔 <strong>プッシュ通知</strong>: バックグラウンドでも通知 → 別アプリ使用中でもOK</div>
+      <div>🔌 <strong>TCP直結</strong>: Switchを直接制御 → HTMLでは不可能なリアルタイム操作</div>
+      <div>📸 <strong>ML Kit OCR</strong>: 日本語護石スキルを高精度認識 → 自動ヒット判定</div>
+      <div style="margin-top:8px;padding:8px;background:rgba(32,201,151,0.06);border-radius:4px;">
+        💡 <strong>推奨フロー:</strong> 護石サーチタブで目標フレームを特定 →
+        自動スナイプタブで目標スキルをOCR設定 →
+        タイマーの初期待機をセット → 開始！
+      </div>
+    </div>
+  </div>
+
+</div><!-- /右カラム -->
+</div><!-- /flex row -->
+</div><!-- /tab-autosnipe -->
+
+<!-- =================== TAB: SysDVR映像 =================== -->
+<div class="tab-page" id="tab-dvr" style="flex-direction:column;padding:20px;max-width:680px;margin:0 auto;width:100%;gap:16px;">
+
+  <!-- ステータスバー -->
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:6px;">
+    <span id="dvrDot" class="dvr-status-dot"></span>
+    <span id="dvrStatusText" style="color:var(--text2);font-size:12px;">Switch 未接続</span>
+  </div>
+
+  <!-- 接続パネル -->
+  <div class="dvr-panel">
+    <div class="sec-title"><span class="dot"></span>📺 SysDVR 映像ストリーム</div>
+    <div class="dvr-panel-body">
+      <div style="font-size:11px;color:var(--text2);line-height:1.7;">
+        Switch 側で <strong style="color:var(--steel2);">SysDVR</strong> を
+        <strong style="color:var(--teal);">TCP ブリッジモード</strong> で起動後、
+        以下の IP を入力して「映像開始」を押してください。<br>
+        映像は全画面オーバーレイで表示されます。戻るボタンまたは ✕ で閉じます。
+      </div>
+
+      <div class="dvr-input-row">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+          <label style="font-size:10px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">Switch IP アドレス</label>
+          <input class="dvr-ip-input" id="dvrIpInput" type="text"
+            placeholder="192.168.x.x"
+            oninput="dvrSyncIp(this.value)" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:10px;color:var(--text3);">ポート</label>
+          <input type="text" value="9911" disabled
+            style="width:68px;background:var(--panel);border:1px solid var(--border);color:var(--text3);border-radius:4px;padding:8px;font-size:12px;text-align:center;" />
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="search-btn teal-btn" id="dvrStartBtn"
+          style="flex:2;min-width:120px;"
+          onclick="dvrStart()">▶ 映像開始</button>
+        <button class="search-btn orange-btn" id="dvrStopBtn"
+          style="flex:1;min-width:80px;"
+          onclick="dvrStop()" disabled>■ 停止</button>
+      </div>
+
+      <div class="dvr-note">
+        💡 <strong>同じ IP を TCP 接続タブと共有</strong> — Switch接続タブで IP を入力済みの場合、自動で引き継ぎます。<br>
+        📡 映像ポート: <code style="color:var(--teal);">9911</code>　
+        映像解像度: <code style="color:var(--teal);">1280×720</code>　
+        コーデック: <code style="color:var(--teal);">H.264</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- 使い方 -->
+  <div class="dvr-panel">
+    <div class="sec-title"><span class="dot"></span>使い方 / 注意事項</div>
+    <div class="dvr-panel-body" style="gap:8px;">
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text2);line-height:1.7;">
+        <div>① Switch に <strong style="color:var(--steel2);">SysDVR 6.x</strong> を導入し、TCP ブリッジモードを有効化</div>
+        <div>② Switch と Android を <strong style="color:var(--teal);">同じ Wi-Fi</strong> に接続</div>
+        <div>③ このタブで Switch IP を入力 → 「映像開始」</div>
+        <div>④ 全画面で Switch の画面がリアルタイム表示されます</div>
+        <div>⑤ 映像中は <strong style="color:var(--yellow);">自動スナイプタブ</strong> でスナイプを同時に実行可能</div>
+      </div>
+      <div style="padding:8px 10px;background:rgba(220,53,69,0.08);border:1px solid rgba(220,53,69,0.2);border-radius:4px;font-size:11px;color:#e07070;">
+        ⚠ Switch CFW + SysDVR sysmodule が必要です。導入方法は SysDVR 公式 GitHub を参照してください。
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-dvr -->
+
+<script>
+// ── SysDVR JS ブリッジ ──────────────────────────────────────────────────────
+
+function dvrSyncIp(val) {
+  // Switch接続タブの IP と共有
+  const tcpIp = document.getElementById('switchIp');
+  if (tcpIp && !tcpIp.value) tcpIp.value = val;
+}
+
+function dvrStart() {
+  const ip = (document.getElementById('dvrIpInput').value ||
+              document.getElementById('switchIp')?.value || '').trim();
+  if (!ip) { alert('Switch の IP アドレスを入力してください'); return; }
+  // TCP接続タブの IP も更新
+  const tcpIp = document.getElementById('switchIp');
+  if (tcpIp) tcpIp.value = ip;
+  document.getElementById('dvrIpInput').value = ip;
+
+  if (typeof AndroidDvr !== 'undefined') {
+    AndroidDvr.startStream(ip);
+    setDvrUI(true, '接続中...');
+  } else {
+    alert('Android DVR ブリッジが見つかりません (WebView 外では動作しません)');
+  }
+}
+
+function dvrStop() {
+  if (typeof AndroidDvr !== 'undefined') AndroidDvr.stopStream();
+  setDvrUI(false, 'Switch 未接続');
+}
+
+function setDvrUI(active, msg) {
+  const dot   = document.getElementById('dvrDot');
+  const txt   = document.getElementById('dvrStatusText');
+  const start = document.getElementById('dvrStartBtn');
+  const stop  = document.getElementById('dvrStopBtn');
+  if (dot)   dot.classList.toggle('active', active);
+  if (txt)   txt.textContent = msg;
+  if (start) start.disabled = active;
+  if (stop)  stop.disabled  = !active;
+}
+
+// Android から呼ばれるコールバック
+function onDvrStatus(e) {
+  setDvrUI(e.streaming, e.message);
+}
+
+// タブ切替時に Switch接続タブの IP を引き継ぎ
+document.addEventListener('DOMContentLoaded', function() {
+  const orig = window.switchTab;
+  window.switchTab = function(tab) {
+    if (orig) orig(tab);
+    if (tab === 'dvr') {
+      const tcpIp = document.getElementById('switchIp');
+      const dvrIp = document.getElementById('dvrIpInput');
+      if (tcpIp && dvrIp && tcpIp.value && !dvrIp.value)
+        dvrIp.value = tcpIp.value;
+    }
+  };
+});
+</script>
+
 </body>
 </html>
