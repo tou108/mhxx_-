@@ -4413,33 +4413,43 @@ function syncMacroLoopSelect() {
 
 <script>
 // ── SysDVR JS ブリッジ ──────────────────────────────────────────────────────
+// AndroidDvr = window.AndroidDvr (JavascriptInterface "AndroidDvr" from SysDvrVideoBridge)
+// TCPポート: 9911 (映像) / 9922 (音声) ← SysDVR TCPブリッジモード固定値
 
-function dvrSyncIp(val) {
-  // Switch接続タブの IP と共有
-  const tcpIp = document.getElementById('switchIp');
-  if (tcpIp && !tcpIp.value) tcpIp.value = val;
+function dvrGetIp() {
+  return (document.getElementById('dvrIpInput').value ||
+          document.getElementById('switchIp')?.value || '').trim();
 }
 
 function dvrStart() {
-  const ip = (document.getElementById('dvrIpInput').value ||
-              document.getElementById('switchIp')?.value || '').trim();
-  if (!ip) { alert('Switch の IP アドレスを入力してください'); return; }
-  // TCP接続タブの IP も更新
+  const ip = dvrGetIp();
+  if (!ip) {
+    dvrSetMsg('⚠ IPアドレスを入力してください');
+    return;
+  }
+  // 両タブのIPを同期
   const tcpIp = document.getElementById('switchIp');
-  if (tcpIp) tcpIp.value = ip;
+  if (tcpIp && !tcpIp.value) tcpIp.value = ip;
   document.getElementById('dvrIpInput').value = ip;
 
-  if (typeof AndroidDvr !== 'undefined') {
-    AndroidDvr.startStream(ip);
-    setDvrUI(true, '接続中...');
-  } else {
-    alert('Android DVR ブリッジが見つかりません (WebView 外では動作しません)');
+  if (typeof AndroidDvr === 'undefined' || AndroidDvr === null) {
+    dvrSetMsg('⚠ AndroidDvrブリッジ未接続 (APK内でのみ動作)');
+    return;
   }
+  setDvrUI(true, '接続中 → ' + ip + ':9911');
+  AndroidDvr.startStream(ip);
 }
 
 function dvrStop() {
-  if (typeof AndroidDvr !== 'undefined') AndroidDvr.stopStream();
+  if (typeof AndroidDvr !== 'undefined' && AndroidDvr !== null) {
+    AndroidDvr.stopStream();
+  }
   setDvrUI(false, 'Switch 未接続');
+}
+
+function dvrSetMsg(msg) {
+  const txt = document.getElementById('dvrStatusText');
+  if (txt) txt.textContent = msg;
 }
 
 function setDvrUI(active, msg) {
@@ -4453,24 +4463,24 @@ function setDvrUI(active, msg) {
   if (stop)  stop.disabled  = !active;
 }
 
-// Android から呼ばれるコールバック
+// Kotlin SysDvrVideoBridge.notifyDvrStatus() から呼ばれるコールバック
 function onDvrStatus(e) {
   setDvrUI(e.streaming, e.message);
 }
 
-// タブ切替時に Switch接続タブの IP を引き継ぎ
-document.addEventListener('DOMContentLoaded', function() {
-  const orig = window.switchTab;
+// Switch映像タブを開いたとき Switch接続タブのIPを自動引き継ぎ
+(function() {
+  var _origSwitchTab = window.switchTab;
   window.switchTab = function(tab) {
-    if (orig) orig(tab);
+    if (_origSwitchTab) _origSwitchTab(tab);
     if (tab === 'dvr') {
-      const tcpIp = document.getElementById('switchIp');
-      const dvrIp = document.getElementById('dvrIpInput');
+      var tcpIp = document.getElementById('switchIp');
+      var dvrIp = document.getElementById('dvrIpInput');
       if (tcpIp && dvrIp && tcpIp.value && !dvrIp.value)
         dvrIp.value = tcpIp.value;
     }
   };
-});
+})();
 </script>
 
 </body>
